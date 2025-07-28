@@ -27,6 +27,7 @@
 		B5D6716C2E37B38000168357 /* APIExplorer.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = APIExplorer.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		B5D671792E37B38100168357 /* APIExplorerTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = APIExplorerTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		B5D671832E37B38200168357 /* APIExplorerUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = APIExplorerUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		B5D671962E37B3F600168357 /* CLAUDE.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = CLAUDE.md; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -75,6 +76,7 @@
 		B5D671632E37B38000168357 = {
 			isa = PBXGroup;
 			children = (
+				B5D671962E37B3F600168357 /* CLAUDE.md */,
 				B5D6716E2E37B38000168357 /* APIExplorer */,
 				B5D6717C2E37B38200168357 /* APIExplorerTests */,
 				B5D671862E37B38200168357 /* APIExplorerUITests */,
