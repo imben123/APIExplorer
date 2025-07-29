@@ -8,17 +8,15 @@
 import SwiftUI
 
 struct ContentView: View {
+  @Binding var document: SwaggerDocument
+
   var body: some View {
-    VStack {
-      Image(systemName: "globe")
-        .imageScale(.large)
-        .foregroundStyle(.tint)
-      Text("Hello, world!")
-    }
-    .padding()
+    Text(document.yamlString)
+      .font(.system(.body, design: .monospaced))
+      .navigationTitle("Swagger Document")
   }
 }
 
 #Preview {
-  ContentView()
+  ContentView(document: .constant(SwaggerDocument(string: "openapi: \"3.1.1\"\ninfo:\n  title: Sample API\n  version: \"1.0.0\"")))
 }

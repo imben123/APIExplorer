@@ -6,6 +6,11 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		B5E97EB62E38B50D00411121 /* SwiftOpenAPI in Frameworks */ = {isa = PBXBuildFile; productRef = B5E97EB52E38B50D00411121 /* SwiftOpenAPI */; };
+		B5E97EB82E38B51200411121 /* OpenAPIViewer in Frameworks */ = {isa = PBXBuildFile; productRef = B5E97EB72E38B51200411121 /* OpenAPIViewer */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXContainerItemProxy section */
 		B5D6717A2E37B38200168357 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -28,6 +33,10 @@
 		B5D671792E37B38100168357 /* APIExplorerTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = APIExplorerTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		B5D671832E37B38200168357 /* APIExplorerUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = APIExplorerUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		B5D671962E37B3F600168357 /* CLAUDE.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = CLAUDE.md; sourceTree = "<group>"; };
+		B5E97E9F2E37D0E000411121 /* OpenAPIViewer */ = {isa = PBXFileReference; lastKnownFileType = wrapper; path = OpenAPIViewer; sourceTree = "<group>"; };
+		B5E97EA02E37D0E000411121 /* SwiftOpenAPI */ = {isa = PBXFileReference; lastKnownFileType = wrapper; path = SwiftOpenAPI; sourceTree = "<group>"; };
+		B5E97EB32E37D2AB00411121 /* SwiftToolbox */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = SwiftToolbox; path = ../SwiftToolbox; sourceTree = SOURCE_ROOT; };
+		B5E97EB92E38CB6400411121 /* APIExplorer.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; path = APIExplorer.xctestplan; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -46,6 +55,16 @@
 			path = APIExplorerUITests;
 			sourceTree = "<group>";
 		};
+		B5E97E692E37C9AE00411121 /* Packages */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = Packages;
+			sourceTree = "<group>";
+		};
+		B5E97E7F2E37D02200411121 /* Fixtures */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = Fixtures;
+			sourceTree = "<group>";
+		};
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -53,6 +72,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				B5E97EB62E38B50D00411121 /* SwiftOpenAPI in Frameworks */,
+				B5E97EB82E38B51200411121 /* OpenAPIViewer in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -76,11 +97,18 @@
 		B5D671632E37B38000168357 = {
 			isa = PBXGroup;
 			children = (
+				B5E97EB92E38CB6400411121 /* APIExplorer.xctestplan */,
 				B5D671962E37B3F600168357 /* CLAUDE.md */,
 				B5D6716E2E37B38000168357 /* APIExplorer */,
+				B5E97E7F2E37D02200411121 /* Fixtures */,
+				B5E97E692E37C9AE00411121 /* Packages */,
 				B5D6717C2E37B38200168357 /* APIExplorerTests */,
 				B5D671862E37B38200168357 /* APIExplorerUITests */,
 				B5D6716D2E37B38000168357 /* Products */,
+				B5E97E9F2E37D0E000411121 /* OpenAPIViewer */,
+				B5E97EA02E37D0E000411121 /* SwiftOpenAPI */,
+				B5E97EB32E37D2AB00411121 /* SwiftToolbox */,
+				B5E97EB42E38B50D00411121 /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -92,6 +120,13 @@
 				B5D671832E37B38200168357 /* APIExplorerUITests.xctest */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		B5E97EB42E38B50D00411121 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Frameworks;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -114,6 +149,8 @@
 			);
 			name = APIExplorer;
 			packageProductDependencies = (
+				B5E97EB52E38B50D00411121 /* SwiftOpenAPI */,
+				B5E97EB72E38B51200411121 /* OpenAPIViewer */,
 			);
 			productName = APIExplorer;
 			productReference = B5D6716C2E37B38000168357 /* APIExplorer.app */;
@@ -402,8 +439,18 @@
 				DEVELOPMENT_TEAM = 5XMV2GP24E;
 				ENABLE_APP_SANDBOX = YES;
 				ENABLE_HARDENED_RUNTIME = YES;
+				ENABLE_INCOMING_NETWORK_CONNECTIONS = NO;
+				ENABLE_OUTGOING_NETWORK_CONNECTIONS = NO;
 				ENABLE_PREVIEWS = YES;
-				ENABLE_USER_SELECTED_FILES = readonly;
+				ENABLE_RESOURCE_ACCESS_AUDIO_INPUT = NO;
+				ENABLE_RESOURCE_ACCESS_BLUETOOTH = NO;
+				ENABLE_RESOURCE_ACCESS_CALENDARS = NO;
+				ENABLE_RESOURCE_ACCESS_CAMERA = NO;
+				ENABLE_RESOURCE_ACCESS_CONTACTS = NO;
+				ENABLE_RESOURCE_ACCESS_LOCATION = NO;
+				ENABLE_RESOURCE_ACCESS_PRINTING = NO;
+				ENABLE_RESOURCE_ACCESS_USB = NO;
+				ENABLE_USER_SELECTED_FILES = readwrite;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -418,8 +465,9 @@
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
 				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
 				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_STRICT_CONCURRENCY = complete;
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
-				SWIFT_VERSION = 5.0;
+				SWIFT_VERSION = 6.0;
 			};
 			name = Debug;
 		};
@@ -434,8 +482,18 @@
 				DEVELOPMENT_TEAM = 5XMV2GP24E;
 				ENABLE_APP_SANDBOX = YES;
 				ENABLE_HARDENED_RUNTIME = YES;
+				ENABLE_INCOMING_NETWORK_CONNECTIONS = NO;
+				ENABLE_OUTGOING_NETWORK_CONNECTIONS = NO;
 				ENABLE_PREVIEWS = YES;
-				ENABLE_USER_SELECTED_FILES = readonly;
+				ENABLE_RESOURCE_ACCESS_AUDIO_INPUT = NO;
+				ENABLE_RESOURCE_ACCESS_BLUETOOTH = NO;
+				ENABLE_RESOURCE_ACCESS_CALENDARS = NO;
+				ENABLE_RESOURCE_ACCESS_CAMERA = NO;
+				ENABLE_RESOURCE_ACCESS_CONTACTS = NO;
+				ENABLE_RESOURCE_ACCESS_LOCATION = NO;
+				ENABLE_RESOURCE_ACCESS_PRINTING = NO;
+				ENABLE_RESOURCE_ACCESS_USB = NO;
+				ENABLE_USER_SELECTED_FILES = readwrite;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -450,8 +508,9 @@
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
 				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
 				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_STRICT_CONCURRENCY = complete;
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
-				SWIFT_VERSION = 5.0;
+				SWIFT_VERSION = 6.0;
 			};
 			name = Release;
 		};
@@ -575,6 +634,17 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		B5E97EB52E38B50D00411121 /* SwiftOpenAPI */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = SwiftOpenAPI;
+		};
+		B5E97EB72E38B51200411121 /* OpenAPIViewer */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = OpenAPIViewer;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = B5D671642E37B38000168357 /* Project object */;
 }

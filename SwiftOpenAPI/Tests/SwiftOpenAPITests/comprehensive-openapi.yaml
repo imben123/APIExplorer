@@ -1,0 +1,391 @@
+openapi: 3.1.0
+info:
+  title: Comprehensive Pet Store API
+  version: 1.2.3
+  summary: A comprehensive OpenAPI example
+  description: |
+    This is a comprehensive OpenAPI specification that demonstrates
+    various features including schemas, operations, security, and more.
+  termsOfService: https://petstore.swagger.io/terms/
+  contact:
+    name: API Support Team
+    url: https://www.example.com/support
+    email: support@example.com
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+
+servers:
+  - url: https://api.petstore.example.com/v1
+    description: Production server
+    variables:
+      version:
+        default: v1
+        description: API version
+  - url: https://staging.petstore.example.com/v1
+    description: Staging server
+
+paths:
+  /pets:
+    get:
+      summary: List all pets
+      description: Returns a list of pets with optional filtering
+      operationId: listPets
+      tags:
+        - pets
+      parameters:
+        - name: limit
+          in: query
+          description: How many items to return at one time (max 100)
+          required: false
+          schema:
+            type: integer
+            format: int32
+            minimum: 1
+            maximum: 100
+            default: 20
+        - name: breed
+          in: query
+          description: Filter by pet breed
+          required: false
+          schema:
+            type: string
+            enum: [dog, cat, bird, fish]
+      responses:
+        '200':
+          description: A paged array of pets
+          headers:
+            x-next:
+              description: A link to the next page of responses
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Pet'
+              examples:
+                pets-example:
+                  summary: Example pets response
+                  value:
+                    - id: 1
+                      name: Fluffy
+                      breed: cat
+                      status: available
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        default:
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+        - api_key: []
+        - petstore_auth:
+            - read:pets
+    post:
+      summary: Create a pet
+      description: Creates a new pet in the store
+      operationId: createPet
+      tags:
+        - pets
+      requestBody:
+        description: Pet to add to the store
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NewPet'
+            examples:
+              new-pet:
+                summary: New pet example
+                value:
+                  name: Buddy
+                  breed: dog
+          application/xml:
+            schema:
+              $ref: '#/components/schemas/NewPet'
+      responses:
+        '201':
+          description: Pet created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Pet'
+        '400':
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+        - petstore_auth:
+            - write:pets
+
+  /pets/{petId}:
+    parameters:
+      - name: petId
+        in: path
+        required: true
+        description: The id of the pet to retrieve
+        schema:
+          type: integer
+          format: int64
+    get:
+      summary: Info for a specific pet
+      description: Returns detailed information about a specific pet
+      operationId: showPetById
+      tags:
+        - pets
+      responses:
+        '200':
+          description: Expected response to a valid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Pet'
+        '404':
+          description: Pet not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        default:
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+        - api_key: []
+    put:
+      summary: Update a pet
+      description: Updates an existing pet
+      operationId: updatePet
+      tags:
+        - pets
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Pet'
+      responses:
+        '200':
+          description: Pet updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Pet'
+        '404':
+          description: Pet not found
+        '400':
+          description: Invalid input
+      security:
+        - petstore_auth:
+            - write:pets
+    delete:
+      summary: Delete a pet
+      description: Removes a pet from the store
+      operationId: deletePet
+      tags:
+        - pets
+      responses:
+        '204':
+          description: Pet deleted successfully
+        '404':
+          description: Pet not found
+      security:
+        - petstore_auth:
+            - write:pets
+
+components:
+  schemas:
+    Pet:
+      type: object
+      required:
+        - id
+        - name
+        - breed
+      properties:
+        id:
+          type: integer
+          format: int64
+          minimum: 1
+          example: 123
+        name:
+          type: string
+          minLength: 1
+          maxLength: 100
+          example: Fluffy
+        breed:
+          type: string
+          enum: [dog, cat, bird, fish]
+          example: cat
+        status:
+          type: string
+          enum: [available, pending, sold]
+          default: available
+        tags:
+          type: array
+          items:
+            $ref: '#/components/schemas/Tag'
+        photoUrls:
+          type: array
+          items:
+            type: string
+            format: uri
+          example:
+            - https://example.com/photo1.jpg
+            - https://example.com/photo2.jpg
+        metadata:
+          type: object
+          additionalProperties:
+            type: string
+        birthDate:
+          type: string
+          format: date
+          example: "2020-01-15"
+
+    NewPet:
+      type: object
+      required:
+        - name
+        - breed
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 100
+        breed:
+          type: string
+          enum: [dog, cat, bird, fish]
+        status:
+          type: string
+          enum: [available, pending, sold]
+          default: available
+        tags:
+          type: array
+          items:
+            $ref: '#/components/schemas/Tag'
+        photoUrls:
+          type: array
+          items:
+            type: string
+            format: uri
+
+    Tag:
+      type: object
+      required:
+        - id
+        - name
+      properties:
+        id:
+          type: integer
+          format: int64
+        name:
+          type: string
+          minLength: 1
+          maxLength: 50
+
+    Error:
+      type: object
+      required:
+        - code
+        - message
+      properties:
+        code:
+          type: integer
+          format: int32
+          minimum: 400
+          maximum: 599
+        message:
+          type: string
+          minLength: 1
+        details:
+          type: string
+
+  securitySchemes:
+    api_key:
+      type: apiKey
+      name: X-API-Key
+      in: header
+      description: API key for authentication
+    petstore_auth:
+      type: oauth2
+      description: OAuth2 authentication
+      flows:
+        authorizationCode:
+          authorizationUrl: https://petstore.example.com/oauth/authorize
+          tokenUrl: https://petstore.example.com/oauth/token
+          scopes:
+            read:pets: Read access to pets
+            write:pets: Write access to pets
+        implicit:
+          authorizationUrl: https://petstore.example.com/oauth/authorize
+          scopes:
+            read:pets: Read access to pets
+            write:pets: Write access to pets
+
+  parameters:
+    LimitParam:
+      name: limit
+      in: query
+      description: Number of items to return
+      required: false
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 100
+        default: 20
+
+  responses:
+    NotFound:
+      description: The specified resource was not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+
+  examples:
+    PetExample:
+      summary: Example pet
+      description: A sample pet object
+      value:
+        id: 1
+        name: Fluffy
+        breed: cat
+        status: available
+        tags:
+          - id: 1
+            name: friendly
+        photoUrls:
+          - https://example.com/fluffy1.jpg
+
+  headers:
+    X-Rate-Limit:
+      description: The number of allowed requests in the current period
+      schema:
+        type: integer
+
+tags:
+  - name: pets
+    description: Pet operations
+    externalDocs:
+      description: Find out more about pets
+      url: https://petstore.example.com/docs/pets
+
+externalDocs:
+  description: Find out more about the Pet Store API
+  url: https://petstore.example.com/docs
+
+security:
+  - api_key: []
+  - petstore_auth:
+      - read:pets

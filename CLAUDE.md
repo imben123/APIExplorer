@@ -61,3 +61,5 @@ APIExplorer/
 - MainActor default isolation
 - Member import visibility upcoming feature enabled
 - String catalog symbol generation
+- **Language**: Swift 6 with strict concurrency
+- **Concurrency Pattern**: Everything @MainActor isolated by default, no need for explicit @MainActor annotations on types

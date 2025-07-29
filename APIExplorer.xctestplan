@@ -1,0 +1,37 @@
+{
+  "configurations" : [
+    {
+      "id" : "8AD2E442-294E-411E-B6A9-FD3CDE10C98C",
+      "name" : "Test Scheme Action",
+      "options" : {
+
+      }
+    }
+  ],
+  "defaultOptions" : {
+    "performanceAntipatternCheckerEnabled" : true,
+    "targetForVariableExpansion" : {
+      "containerPath" : "container:APIExplorer.xcodeproj",
+      "identifier" : "B5D6716B2E37B38000168357",
+      "name" : "APIExplorer"
+    }
+  },
+  "testTargets" : [
+    {
+      "target" : {
+        "containerPath" : "container:SwiftOpenAPI",
+        "identifier" : "SwiftOpenAPITests",
+        "name" : "SwiftOpenAPITests"
+      }
+    },
+    {
+      "parallelizable" : true,
+      "target" : {
+        "containerPath" : "container:APIExplorer.xcodeproj",
+        "identifier" : "B5D671782E37B38100168357",
+        "name" : "APIExplorerTests"
+      }
+    }
+  ],
+  "version" : 1
+}

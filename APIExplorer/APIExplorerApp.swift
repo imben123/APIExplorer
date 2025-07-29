@@ -10,8 +10,8 @@ import SwiftUI
 @main
 struct APIExplorerApp: App {
   var body: some Scene {
-    WindowGroup {
-      ContentView()
+    DocumentGroup(newDocument: SwaggerDocument()) { file in
+      ContentView(document: file.$document)
     }
   }
 }

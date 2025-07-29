@@ -1,0 +1,348 @@
+openapi: 3.1.1
+info:
+  title: Example User API
+  description: |
+    A sample API that demonstrates user management functionality with health checks.
+    
+    This API provides endpoints for managing users and checking system health.
+  version: 1.0.0
+  contact:
+    name: API Support
+    email: support@example.com
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+
+servers:
+  - url: https://api-dev.example.com/api/v1
+    description: Development server
+    variables:
+      environment:
+        default: development
+        enum:
+          - development
+          - staging
+  - url: https://api.example.com/api/v1
+    description: Production server
+    variables:
+      environment:
+        default: production
+
+paths:
+  /health:
+    get:
+      tags:
+        - Health
+      summary: Health check endpoint
+      description: Returns the health status of the API service
+      operationId: healthCheck
+      responses:
+        '200':
+          description: Service is healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    enum: [healthy, degraded, unhealthy]
+                    example: healthy
+                  timestamp:
+                    type: string
+                    format: date-time
+                    example: '2024-01-15T10:30:00Z'
+                  version:
+                    type: string
+                    example: '1.0.0'
+                  environment:
+                    type: string
+                    example: 'development'
+                required:
+                  - status
+                  - timestamp
+        '503':
+          description: Service is unhealthy
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /users/{userId}:
+    get:
+      tags:
+        - Users
+      summary: Get user by ID
+      description: Retrieves a specific user by their unique identifier
+      operationId: getUserById
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          description: The unique identifier of the user
+          schema:
+            type: string
+            format: uuid
+            example: '123e4567-e89b-12d3-a456-426614174000'
+      responses:
+        '200':
+          description: User found successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '404':
+          description: User not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '400':
+          description: Invalid user ID format
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /users:
+    post:
+      tags:
+        - Users
+      summary: Create a new user
+      description: Creates a new user account with the provided information
+      operationId: createUser
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateUserRequest'
+            examples:
+              john_doe:
+                summary: Example user creation
+                value:
+                  email: john.doe@example.com
+                  firstName: John
+                  lastName: Doe
+                  dateOfBirth: '1990-05-15'
+      responses:
+        '201':
+          description: User created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+          headers:
+            Location:
+              description: URL of the created user
+              schema:
+                type: string
+                format: uri
+                example: '/api/v1/users/123e4567-e89b-12d3-a456-426614174000'
+        '400':
+          description: Invalid input data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationError'
+        '409':
+          description: User with this email already exists
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+components:
+  schemas:
+    User:
+      type: object
+      description: A user in the system
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Unique identifier for the user
+          example: '123e4567-e89b-12d3-a456-426614174000'
+          readOnly: true
+        email:
+          type: string
+          format: email
+          description: User's email address
+          example: 'john.doe@example.com'
+        firstName:
+          type: string
+          minLength: 1
+          maxLength: 50
+          description: User's first name
+          example: 'John'
+        lastName:
+          type: string
+          minLength: 1
+          maxLength: 50
+          description: User's last name
+          example: 'Doe'
+        dateOfBirth:
+          type: string
+          format: date
+          description: User's date of birth
+          example: '1990-05-15'
+        createdAt:
+          type: string
+          format: date-time
+          description: When the user account was created
+          example: '2024-01-15T10:30:00Z'
+          readOnly: true
+        updatedAt:
+          type: string
+          format: date-time
+          description: When the user account was last updated
+          example: '2024-01-15T10:30:00Z'
+          readOnly: true
+        status:
+          type: string
+          enum: [active, inactive, suspended]
+          description: Current status of the user account
+          example: 'active'
+          default: 'active'
+      required:
+        - id
+        - email
+        - firstName
+        - lastName
+        - createdAt
+        - updatedAt
+        - status
+
+    CreateUserRequest:
+      type: object
+      description: Request payload for creating a new user
+      properties:
+        email:
+          type: string
+          format: email
+          description: User's email address (must be unique)
+          example: 'john.doe@example.com'
+        firstName:
+          type: string
+          minLength: 1
+          maxLength: 50
+          description: User's first name
+          example: 'John'
+        lastName:
+          type: string
+          minLength: 1
+          maxLength: 50
+          description: User's last name
+          example: 'Doe'
+        dateOfBirth:
+          type: string
+          format: date
+          description: User's date of birth (optional)
+          example: '1990-05-15'
+      required:
+        - email
+        - firstName
+        - lastName
+
+    Error:
+      type: object
+      description: Standard error response
+      properties:
+        error:
+          type: object
+          properties:
+            code:
+              type: string
+              description: Error code identifier
+              example: 'USER_NOT_FOUND'
+            message:
+              type: string
+              description: Human-readable error message
+              example: 'The requested user could not be found'
+            timestamp:
+              type: string
+              format: date-time
+              description: When the error occurred
+              example: '2024-01-15T10:30:00Z'
+            requestId:
+              type: string
+              format: uuid
+              description: Unique identifier for this request
+              example: '987fcdeb-51a2-43d7-8f12-345678901234'
+          required:
+            - code
+            - message
+            - timestamp
+      required:
+        - error
+
+    ValidationError:
+      type: object
+      description: Validation error response with field-specific errors
+      properties:
+        error:
+          type: object
+          properties:
+            code:
+              type: string
+              description: Error code identifier
+              example: 'VALIDATION_ERROR'
+            message:
+              type: string
+              description: General validation error message
+              example: 'The request contains invalid data'
+            timestamp:
+              type: string
+              format: date-time
+              description: When the error occurred
+              example: '2024-01-15T10:30:00Z'
+            requestId:
+              type: string
+              format: uuid
+              description: Unique identifier for this request
+              example: '987fcdeb-51a2-43d7-8f12-345678901234'
+            details:
+              type: array
+              description: Array of field-specific validation errors
+              items:
+                type: object
+                properties:
+                  field:
+                    type: string
+                    description: The field that failed validation
+                    example: 'email'
+                  code:
+                    type: string
+                    description: Specific validation error code
+                    example: 'INVALID_FORMAT'
+                  message:
+                    type: string
+                    description: Field-specific error message
+                    example: 'Email address must be in valid format'
+                required:
+                  - field
+                  - code
+                  - message
+          required:
+            - code
+            - message
+            - timestamp
+            - details
+      required:
+        - error
+
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: JWT token for API authentication
+
+security:
+  - bearerAuth: []
+
+tags:
+  - name: Health
+    description: Health check operations
+  - name: Users
+    description: User management operations

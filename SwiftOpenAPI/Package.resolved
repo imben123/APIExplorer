@@ -1,0 +1,24 @@
+{
+  "originHash" : "0cc19358a88af50a67424d75f727a9e11b5596e473a0c03e9e4860c1063a2210",
+  "pins" : [
+    {
+      "identity" : "swifttoolbox",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/imben123/SwiftToolbox",
+      "state" : {
+        "branch" : "main",
+        "revision" : "64bc1b050747ffc938ff635183733957a0d2a1f1"
+      }
+    },
+    {
+      "identity" : "yams",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/jpsim/Yams",
+      "state" : {
+        "revision" : "3d6871d5b4a5cd519adf233fbb576e0a2af71c17",
+        "version" : "5.4.0"
+      }
+    }
+  ],
+  "version" : 3
+}

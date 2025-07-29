@@ -1,7 +1,11 @@
 {
   "permissions": {
     "allow": [
-      "Bash(xcodebuild:*)"
+      "Bash(xcodebuild:*)",
+      "Bash(git commit:*)",
+      "Bash(mkdir:*)",
+      "WebFetch(domain:swagger.io)",
+      "Bash(swift test)"
     ],
     "deny": []
   }

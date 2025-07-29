@@ -1,0 +1,29 @@
+type: object
+description: Request payload for creating a new user
+properties:
+  email:
+    type: string
+    format: email
+    description: User's email address (must be unique)
+    example: 'john.doe@example.com'
+  firstName:
+    type: string
+    minLength: 1
+    maxLength: 50
+    description: User's first name
+    example: 'John'
+  lastName:
+    type: string
+    minLength: 1
+    maxLength: 50
+    description: User's last name
+    example: 'Doe'
+  dateOfBirth:
+    type: string
+    format: date
+    description: User's date of birth (optional)
+    example: '1990-05-15'
+required:
+  - email
+  - firstName
+  - lastName

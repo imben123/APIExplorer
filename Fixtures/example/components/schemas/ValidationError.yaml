@@ -1,0 +1,53 @@
+type: object
+description: Validation error response with field-specific errors
+properties:
+  error:
+    type: object
+    properties:
+      code:
+        type: string
+        description: Error code identifier
+        example: 'VALIDATION_ERROR'
+      message:
+        type: string
+        description: General validation error message
+        example: 'The request contains invalid data'
+      timestamp:
+        type: string
+        format: date-time
+        description: When the error occurred
+        example: '2024-01-15T10:30:00Z'
+      requestId:
+        type: string
+        format: uuid
+        description: Unique identifier for this request
+        example: '987fcdeb-51a2-43d7-8f12-345678901234'
+      details:
+        type: array
+        description: Array of field-specific validation errors
+        items:
+          type: object
+          properties:
+            field:
+              type: string
+              description: The field that failed validation
+              example: 'email'
+            code:
+              type: string
+              description: Specific validation error code
+              example: 'INVALID_FORMAT'
+            message:
+              type: string
+              description: Field-specific error message
+              example: 'Email address must be in valid format'
+          required:
+            - field
+            - code
+            - message
+    required:
+      - code
+      - message
+      - timestamp
+      - details
+required:
+  - error
