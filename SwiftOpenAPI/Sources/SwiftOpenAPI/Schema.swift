@@ -9,56 +9,7 @@ import SwiftToolbox
 
 public extension OpenAPI {
   /// The Schema Object allows the definition of input and output data types.
-  indirect enum Schema: Model {
-    case schema(SchemaObject)
-    case reference(String)
-    
-    public var schemaObject: SchemaObject? {
-      switch self {
-      case .schema(let obj):
-        return obj
-      case .reference:
-        return nil
-      }
-    }
-    
-    public var reference: String? {
-      switch self {
-      case .schema:
-        return nil
-      case .reference(let ref):
-        return ref
-      }
-    }
-    
-    public init(from decoder: Decoder) throws {
-      let container = try decoder.singleValueContainer()
-      if let refContainer = try? decoder.container(keyedBy: CodingKeys.self),
-         let ref = try? refContainer.decode(String.self, forKey: .ref) {
-        self = .reference(ref)
-      } else {
-        let schemaObj = try container.decode(SchemaObject.self)
-        self = .schema(schemaObj)
-      }
-    }
-    
-    public func encode(to encoder: Encoder) throws {
-      switch self {
-      case .schema(let obj):
-        try obj.encode(to: encoder)
-      case .reference(let ref):
-        var container = encoder.container(keyedBy: CodingKeys.self)
-        try container.encode(ref, forKey: .ref)
-      }
-    }
-    
-    private enum CodingKeys: String, CodingKey {
-      case ref = "$ref"
-    }
-  }
-  
-  /// The actual schema object with all properties.
-  struct SchemaObject: Model {
+  struct Schema: Model {
     // Core JSON Schema properties
     public let title: String?
     public let multipleOf: Double?
@@ -75,29 +26,29 @@ public extension OpenAPI {
     public let maxProperties: Int?
     public let minProperties: Int?
     public let required: [String]?
-    public let `enum`: [JSONObject]?
+    public let `enum`: [OrderedJSONValue]?
     
     // Schema composition
     public let allOf: [Schema]?
     public let oneOf: [Schema]?
     public let anyOf: [Schema]?
-    public let not: Schema?
+    public let not: IndirectSchema?
     
     // Type-specific properties
     public let type: SchemaType?
     public let format: String?
-    public let items: Schema?
+    public let items: IndirectSchema?
     public let properties: [String: Schema]?
     public let additionalProperties: AdditionalProperties?
     public let description: String?
-    public let `default`: JSONObject?
+    public let `default`: OrderedJSONValue?
     
     // OpenAPI-specific properties
     public let nullable: Bool?
     public let discriminator: Discriminator?
     public let readOnly: Bool?
     public let writeOnly: Bool?
-    public let example: JSONObject?
+    public let example: OrderedJSONValue?
     public let externalDocs: ExternalDocumentation?
     public let deprecated: Bool?
     public let xml: XML?
@@ -129,23 +80,23 @@ public extension OpenAPI {
       maxProperties: Int? = nil,
       minProperties: Int? = nil,
       required: [String]? = nil,
-      enum: [JSONObject]? = nil,
+      enum: [OrderedJSONValue]? = nil,
       allOf: [Schema]? = nil,
       oneOf: [Schema]? = nil,
       anyOf: [Schema]? = nil,
-      not: Schema? = nil,
+      not: IndirectSchema? = nil,
       type: SchemaType? = nil,
       format: String? = nil,
-      items: Schema? = nil,
+      items: IndirectSchema? = nil,
       properties: [String: Schema]? = nil,
       additionalProperties: AdditionalProperties? = nil,
       description: String? = nil,
-      default: JSONObject? = nil,
+      default: OrderedJSONValue? = nil,
       nullable: Bool? = nil,
       discriminator: Discriminator? = nil,
       readOnly: Bool? = nil,
       writeOnly: Bool? = nil,
-      example: JSONObject? = nil,
+      example: OrderedJSONValue? = nil,
       externalDocs: ExternalDocumentation? = nil,
       deprecated: Bool? = nil,
       xml: XML? = nil
@@ -221,6 +172,32 @@ public extension OpenAPI {
         try container.encode(bool)
       case .schema(let schema):
         try container.encode(schema)
+      }
+    }
+  }
+
+  /// Indirect wrapper for Schema to handle recursive references.
+  indirect enum IndirectSchema: Model {
+    case none
+    case some(Schema)
+
+    public init(from decoder: Decoder) throws {
+      if let _ = try? decoder.singleValueContainer().decodeNil() {
+        self = .none
+      } else {
+        let schema = try Schema(from: decoder)
+        self = .some(schema)
+      }
+    }
+
+    public func encode(to encoder: Encoder) throws {
+      switch self {
+      case .none:
+        // Encode null or skip
+        var container = encoder.singleValueContainer()
+        try container.encodeNil()
+      case .some(let schema):
+        try schema.encode(to: encoder)
       }
     }
   }

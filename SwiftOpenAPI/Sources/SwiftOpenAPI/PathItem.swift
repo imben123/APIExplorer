@@ -10,9 +10,6 @@ import SwiftToolbox
 public extension OpenAPI {
   /// Describes the operations available on a single path.
   struct PathItem: Model {
-    /// Allows for a referenced definition of this path item.
-    public let ref: String?
-
     /// An optional, string summary, intended to apply to all operations in this path.
     public let summary: String?
 
@@ -47,10 +44,13 @@ public extension OpenAPI {
     public let servers: [Server]?
 
     /// A list of parameters that are applicable for all the operations in this path.
-    public let parameters: [Parameter]?
+    public let parameters: [Referenceable<Parameter>]?
+
+    /// An array of subdirectory components for organizing paths from referenced files.
+    /// This property is not encoded/decoded and is used for preserving file organization.
+    public let subdirectories: [String]?
 
     public init(
-      ref: String? = nil,
       summary: String? = nil,
       description: String? = nil,
       get: Operation? = nil,
@@ -62,9 +62,9 @@ public extension OpenAPI {
       patch: Operation? = nil,
       trace: Operation? = nil,
       servers: [Server]? = nil,
-      parameters: [Parameter]? = nil
+      parameters: [Referenceable<Parameter>]? = nil,
+      subdirectories: [String]? = nil
     ) {
-      self.ref = ref
       self.summary = summary
       self.description = description
       self.get = get
@@ -77,11 +77,11 @@ public extension OpenAPI {
       self.trace = trace
       self.servers = servers
       self.parameters = parameters
+      self.subdirectories = subdirectories
     }
   }
 
   private enum CodingKeys: String, CodingKey {
-    case ref = "$ref"
     case summary, description, get, put, post, delete, options, head, patch, trace, servers, parameters
   }
 }

@@ -14,7 +14,7 @@ public extension OpenAPI {
     public let contentType: String?
     
     /// A map allowing additional information to be provided as headers.
-    public let headers: [String: Header]?
+    public let headers: [String: Referenceable<Header>]?
     
     /// Describes how a specific property value will be serialized depending on its type.
     public let style: ParameterStyle?
@@ -27,7 +27,7 @@ public extension OpenAPI {
     
     public init(
       contentType: String? = nil,
-      headers: [String: Header]? = nil,
+      headers: [String: Referenceable<Header>]? = nil,
       style: ParameterStyle? = nil,
       explode: Bool? = nil,
       allowReserved: Bool? = nil

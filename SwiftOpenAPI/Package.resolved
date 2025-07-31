@@ -1,22 +1,31 @@
 {
-  "originHash" : "0cc19358a88af50a67424d75f727a9e11b5596e473a0c03e9e4860c1063a2210",
+  "originHash" : "613697e02a98404d27c40147dcecec90ade4672a243940a379509adc652178a1",
   "pins" : [
+    {
+      "identity" : "swift-argument-parser",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/apple/swift-argument-parser",
+      "state" : {
+        "revision" : "309a47b2b1d9b5e991f36961c983ecec72275be3",
+        "version" : "1.6.1"
+      }
+    },
+    {
+      "identity" : "swift-collections",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/imben123/swift-collections",
+      "state" : {
+        "branch" : "feature/ordered-dictionary-codable-strategy",
+        "revision" : "1badd66f5421b8422b96bbfbd0a8012f95e5a6f8"
+      }
+    },
     {
       "identity" : "swifttoolbox",
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/imben123/SwiftToolbox",
       "state" : {
         "branch" : "main",
-        "revision" : "64bc1b050747ffc938ff635183733957a0d2a1f1"
-      }
-    },
-    {
-      "identity" : "yams",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/jpsim/Yams",
-      "state" : {
-        "revision" : "3d6871d5b4a5cd519adf233fbb576e0a2af71c17",
-        "version" : "5.4.0"
+        "revision" : "3a206bab71f32e0e7965979d88882df108efa10d"
       }
     }
   ],

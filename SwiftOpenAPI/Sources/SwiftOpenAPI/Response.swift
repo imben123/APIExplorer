@@ -14,19 +14,19 @@ public extension OpenAPI {
     public let description: String
     
     /// Maps a header name to its definition.
-    public let headers: [String: Header]?
+    public let headers: [String: Referenceable<Header>]?
     
     /// A map containing descriptions of potential response payloads.
     public let content: [String: MediaType]?
     
     /// A map of operations links that can be followed from the response.
-    public let links: [String: Link]?
+    public let links: [String: Referenceable<Link>]?
     
     public init(
       description: String,
-      headers: [String: Header]? = nil,
+      headers: [String: Referenceable<Header>]? = nil,
       content: [String: MediaType]? = nil,
-      links: [String: Link]? = nil
+      links: [String: Referenceable<Link>]? = nil
     ) {
       self.description = description
       self.headers = headers

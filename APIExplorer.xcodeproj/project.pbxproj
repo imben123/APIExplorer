@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		B5E97EB62E38B50D00411121 /* SwiftOpenAPI in Frameworks */ = {isa = PBXBuildFile; productRef = B5E97EB52E38B50D00411121 /* SwiftOpenAPI */; };
 		B5E97EB82E38B51200411121 /* OpenAPIViewer in Frameworks */ = {isa = PBXBuildFile; productRef = B5E97EB72E38B51200411121 /* OpenAPIViewer */; };
+		B5E97F3D2E39277400411121 /* AppToolbox in Frameworks */ = {isa = PBXBuildFile; productRef = B5E97F3C2E39277400411121 /* AppToolbox */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -37,6 +38,7 @@
 		B5E97EA02E37D0E000411121 /* SwiftOpenAPI */ = {isa = PBXFileReference; lastKnownFileType = wrapper; path = SwiftOpenAPI; sourceTree = "<group>"; };
 		B5E97EB32E37D2AB00411121 /* SwiftToolbox */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = SwiftToolbox; path = ../SwiftToolbox; sourceTree = SOURCE_ROOT; };
 		B5E97EB92E38CB6400411121 /* APIExplorer.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; path = APIExplorer.xctestplan; sourceTree = "<group>"; };
+		B5E97F3B2E39276E00411121 /* AppToolbox */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = AppToolbox; path = ../AppToolbox; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -73,6 +75,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				B5E97EB62E38B50D00411121 /* SwiftOpenAPI in Frameworks */,
+				B5E97F3D2E39277400411121 /* AppToolbox in Frameworks */,
 				B5E97EB82E38B51200411121 /* OpenAPIViewer in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -107,6 +110,7 @@
 				B5D6716D2E37B38000168357 /* Products */,
 				B5E97E9F2E37D0E000411121 /* OpenAPIViewer */,
 				B5E97EA02E37D0E000411121 /* SwiftOpenAPI */,
+				B5E97F3B2E39276E00411121 /* AppToolbox */,
 				B5E97EB32E37D2AB00411121 /* SwiftToolbox */,
 				B5E97EB42E38B50D00411121 /* Frameworks */,
 			);
@@ -151,6 +155,7 @@
 			packageProductDependencies = (
 				B5E97EB52E38B50D00411121 /* SwiftOpenAPI */,
 				B5E97EB72E38B51200411121 /* OpenAPIViewer */,
+				B5E97F3C2E39277400411121 /* AppToolbox */,
 			);
 			productName = APIExplorer;
 			productReference = B5D6716C2E37B38000168357 /* APIExplorer.app */;
@@ -643,6 +648,10 @@
 		B5E97EB72E38B51200411121 /* OpenAPIViewer */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = OpenAPIViewer;
+		};
+		B5E97F3C2E39277400411121 /* AppToolbox */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = AppToolbox;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

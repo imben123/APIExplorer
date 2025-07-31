@@ -11,14 +11,14 @@ public extension OpenAPI {
   /// A container for the expected responses of an operation.
   struct Responses: Model {
     /// The documentation of responses other than the ones declared for specific HTTP response codes.
-    public let `default`: Response?
+    public let `default`: Referenceable<Response>?
     
     /// Any HTTP status codes can be used as the property name, but only one property per code, to describe the expected response for that HTTP status code.
-    public let responses: [String: Response]
+    public let responses: [String: Referenceable<Response>]
     
     public init(
-      default: Response? = nil,
-      responses: [String: Response]
+      default: Referenceable<Response>? = nil,
+      responses: [String: Referenceable<Response>]
     ) {
       self.default = `default`
       self.responses = responses
@@ -27,14 +27,14 @@ public extension OpenAPI {
     public init(from decoder: Decoder) throws {
       let container = try decoder.container(keyedBy: OpenAPI.DynamicCodingKey.self)
       
-      var responses: [String: Response] = [:]
-      var defaultResponse: Response?
+      var responses: [String: Referenceable<Response>] = [:]
+      var defaultResponse: Referenceable<Response>?
       
       for key in container.allKeys {
         if key.stringValue == "default" {
-          defaultResponse = try container.decode(Response.self, forKey: key)
+          defaultResponse = try container.decode(Referenceable<Response>.self, forKey: key)
         } else {
-          responses[key.stringValue] = try container.decode(Response.self, forKey: key)
+          responses[key.stringValue] = try container.decode(Referenceable<Response>.self, forKey: key)
         }
       }
       

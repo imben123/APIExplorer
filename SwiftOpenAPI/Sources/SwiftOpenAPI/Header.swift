@@ -32,13 +32,13 @@ public extension OpenAPI {
     public let allowReserved: Bool?
     
     /// The schema defining the type used for the header.
-    public let schema: Schema?
+    public let schema: Referenceable<Schema>?
     
     /// Example of the header's potential value.
-    public let example: JSONObject?
+    public let example: OrderedJSONValue?
     
     /// Examples of the header's potential value.
-    public let examples: [String: Example]?
+    public let examples: [String: Referenceable<Example>]?
     
     /// A map containing the representations for the header.
     public let content: [String: MediaType]?
@@ -51,9 +51,9 @@ public extension OpenAPI {
       style: ParameterStyle? = nil,
       explode: Bool? = nil,
       allowReserved: Bool? = nil,
-      schema: Schema? = nil,
-      example: JSONObject? = nil,
-      examples: [String: Example]? = nil,
+      schema: Referenceable<Schema>? = nil,
+      example: OrderedJSONValue? = nil,
+      examples: [String: Referenceable<Example>]? = nil,
       content: [String: MediaType]? = nil
     ) {
       self.description = description

@@ -63,3 +63,6 @@ APIExplorer/
 - String catalog symbol generation
 - **Language**: Swift 6 with strict concurrency
 - **Concurrency Pattern**: Everything @MainActor isolated by default, no need for explicit @MainActor annotations on types
+
+## Coding Guidelines
+- Always use 2 spaces for indentation

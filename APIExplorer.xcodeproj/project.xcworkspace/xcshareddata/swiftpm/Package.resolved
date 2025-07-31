@@ -37,12 +37,30 @@
       }
     },
     {
+      "identity" : "swift-argument-parser",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/apple/swift-argument-parser",
+      "state" : {
+        "revision" : "309a47b2b1d9b5e991f36961c983ecec72275be3",
+        "version" : "1.6.1"
+      }
+    },
+    {
+      "identity" : "swift-collections",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/imben123/swift-collections",
+      "state" : {
+        "branch" : "feature/ordered-dictionary-codable-strategy",
+        "revision" : "1badd66f5421b8422b96bbfbd0a8012f95e5a6f8"
+      }
+    },
+    {
       "identity" : "yams",
       "kind" : "remoteSourceControl",
-      "location" : "https://github.com/jpsim/Yams",
+      "location" : "https://github.com/imben123/Yams",
       "state" : {
-        "revision" : "3d6871d5b4a5cd519adf233fbb576e0a2af71c17",
-        "version" : "5.4.0"
+        "branch" : "main",
+        "revision" : "8f76aa16d8a8f22930c33ba53572037d2d414d64"
       }
     }
   ],

@@ -9,8 +9,15 @@ import SwiftUI
 
 @main
 struct APIExplorerApp: App {
+  
+  init() {
+    // Enable NSOpenPanel folder selection
+    NSOpenPanel.enableFolderSelection()
+    NSDocument.performSwizzles()
+  }
+  
   var body: some Scene {
-    DocumentGroup(newDocument: SwaggerDocument()) { file in
+    DocumentGroup(newDocument: OpenAPIDocument()) { file in
       ContentView(document: file.$document)
     }
   }

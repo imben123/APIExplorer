@@ -1,5 +1,5 @@
 //
-//  SwaggerDocument.swift
+//  OpenAPIDocument.swift
 //  APIExplorer
 //
 //  Created by Ben Davis on 28/07/2025.
@@ -10,15 +10,15 @@ import UniformTypeIdentifiers
 import SwiftOpenAPI
 import Yams
 
-nonisolated struct SwaggerDocument: FileDocument {
+nonisolated struct OpenAPIDocument: FileDocument {
   var content: OpenAPI.Document
 
   var yamlString: String {
     try! YAMLEncoder().encode(content)
   }
 
-  static var writableContentTypes: [UTType] { [.yaml, .json] }
-  static var readableContentTypes: [UTType] { [.yaml, .json] }
+  static var writableContentTypes: [UTType] { [.yaml, .json, .folder] }
+  static var readableContentTypes: [UTType] { [.yaml, .json, .folder] }
 
   init(string: String? = nil) {
     if let string {
@@ -29,14 +29,15 @@ nonisolated struct SwaggerDocument: FileDocument {
   }
   
   init(configuration: ReadConfiguration) throws {
-    guard let data = configuration.file.regularFileContents else {
-      throw CocoaError(.fileReadCorruptFile)
+    do {
+      content = try OpenAPI.Document.from(fileWrapper: configuration.file)
+    } catch {
+      // If loading fails (e.g., no standard files found in folder), create a default document
+      content = OpenAPI.Document(openapi: "3.1.1", info: .init(title: "Sample API", version: "1.0.0"))
     }
-    content = try! OpenAPI.Document.parse(from: data)
   }
   
   func fileWrapper(configuration: WriteConfiguration) throws -> FileWrapper {
-    let data = try JSONEncoder().encode(content)
-    return .init(regularFileWithContents: data)
+    return try content.serialize(configuration: configuration)
   }
 }

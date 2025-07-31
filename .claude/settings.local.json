@@ -5,7 +5,20 @@
       "Bash(git commit:*)",
       "Bash(mkdir:*)",
       "WebFetch(domain:swagger.io)",
-      "Bash(swift test)"
+      "Bash(swift test)",
+      "Bash(mv:*)",
+      "WebFetch(domain:www.hackingwithswift.com)",
+      "WebFetch(domain:developer.apple.com)",
+      "WebFetch(domain:stackoverflow.com)",
+      "WebFetch(domain:nilcoalescing.com)",
+      "Bash(swift build:*)",
+      "Bash(.build/debug/open-api-parser list-paths:*)",
+      "Bash(find:*)",
+      "Bash(ls:*)",
+      "WebFetch(domain:github.com)",
+      "Bash(swift run:*)",
+      "Bash(swift package:*)",
+      "Bash(swift:*)"
     ],
     "deny": []
   }

@@ -6,17 +6,22 @@
 //
 
 import SwiftUI
+import OpenAPIViewer
+import AppToolbox
+import SwiftOpenAPI
 
 struct ContentView: View {
-  @Binding var document: SwaggerDocument
+  @Binding var document: OpenAPIDocument
 
   var body: some View {
-    Text(document.yamlString)
-      .font(.system(.body, design: .monospaced))
-      .navigationTitle("Swagger Document")
+    OpenAPIDocumentView(document: $document.content)
+      .window {
+        $0?.setOpenAPIFileName(document.content.info.title)
+      }
+      .navigationTitle(document.content.info.title)
   }
 }
 
 #Preview {
-  ContentView(document: .constant(SwaggerDocument(string: "openapi: \"3.1.1\"\ninfo:\n  title: Sample API\n  version: \"1.0.0\"")))
+  ContentView(document: .constant(OpenAPIDocument(string: "openapi: \"3.1.1\"\ninfo:\n  title: Sample API\n  version: \"1.0.0\"")))
 }

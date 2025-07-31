@@ -26,16 +26,16 @@ public extension OpenAPI {
     public let operationId: String?
     
     /// A list of parameters that are applicable for this operation.
-    public let parameters: [Parameter]?
+    public let parameters: [Referenceable<Parameter>]?
     
     /// The request body applicable for this operation.
-    public let requestBody: RequestBody?
+    public let requestBody: Referenceable<RequestBody>?
     
     /// The list of possible responses as they are returned from executing this operation.
     public let responses: Responses?
     
     /// A map of possible out-of band callbacks related to the parent operation.
-    public let callbacks: [String: Callback]?
+    public let callbacks: [String: Referenceable<Callback>]?
     
     /// Declares this operation to be deprecated.
     public let deprecated: Bool?
@@ -52,10 +52,10 @@ public extension OpenAPI {
       description: String? = nil,
       externalDocs: ExternalDocumentation? = nil,
       operationId: String? = nil,
-      parameters: [Parameter]? = nil,
-      requestBody: RequestBody? = nil,
+      parameters: [Referenceable<Parameter>]? = nil,
+      requestBody: Referenceable<RequestBody>? = nil,
       responses: Responses? = nil,
-      callbacks: [String: Callback]? = nil,
+      callbacks: [String: Referenceable<Callback>]? = nil,
       deprecated: Bool? = nil,
       security: [SecurityRequirement]? = nil,
       servers: [Server]? = nil

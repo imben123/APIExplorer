@@ -17,10 +17,10 @@ public extension OpenAPI {
     public let operationId: String?
     
     /// A map representing parameters to pass to an operation as specified with operationId or identified via operationRef.
-    public let parameters: [String: JSONObject]?
+    public let parameters: [String: OrderedJSONValue]?
     
     /// A literal value or expression to use as a request body when calling the target operation.
-    public let requestBody: JSONObject?
+    public let requestBody: OrderedJSONValue?
     
     /// A description of the link.
     public let description: String?
@@ -31,8 +31,8 @@ public extension OpenAPI {
     public init(
       operationRef: String? = nil,
       operationId: String? = nil,
-      parameters: [String: JSONObject]? = nil,
-      requestBody: JSONObject? = nil,
+      parameters: [String: OrderedJSONValue]? = nil,
+      requestBody: OrderedJSONValue? = nil,
       description: String? = nil,
       server: Server? = nil
     ) {
