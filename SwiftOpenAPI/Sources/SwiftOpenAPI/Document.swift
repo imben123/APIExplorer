@@ -366,132 +366,132 @@ public extension OpenAPI {
         return try encoder.encode(self).data(using: .utf8)!
       }
     }
-    
+
     /// Serializes the Document to a FileWrapper based on WriteConfiguration
     /// - Parameter configuration: The write configuration containing content type information
     /// - Returns: A FileWrapper containing the serialized document
     /// - Throws: Error if serialization fails
     public func serialize(configuration: FileDocument.WriteConfiguration) throws -> FileWrapper {
       // Check if we should write as a directory
-      if configuration.contentType == .folder {
-        // Create directory wrapper
-        let directoryWrapper = FileWrapper(directoryWithFileWrappers: [:])
-        
-        // Determine the main file format - prefer YAML for directories
-        let mainFileName = "openapi.yaml"
-        let mainFileData = try serialize(format: .yaml)
-        directoryWrapper.addRegularFile(withContents: mainFileData, preferredFilename: mainFileName)
-
-        // Add component files if available
-        if let componentFiles = componentFiles {
-          func addComponentFiles<T: Encodable>(_ files: OrderedDictionary<String, T>?) {
-            guard let files = files else { return }
-            
-            for (filePath, component) in files {
-              // Skip the main OpenAPI file to avoid duplication
-              if filePath == mainFileName {
-                continue
-              }
-              
-              let encoder = YAMLEncoder()
-              encoder.orderedDictionaryCodingStrategy = .keyedContainer
-              let data = try! encoder.encode(component).data(using: .utf8)!
-              
-              // Create nested directory structure if needed
-              let pathComponents = filePath.split(separator: "/").map(String.init)
-              var currentWrapper = directoryWrapper
-              
-              // Navigate/create directory structure
-              for (index, component) in pathComponents.enumerated() {
-                if index == pathComponents.count - 1 {
-                  // Last component is the file
-                  currentWrapper.addRegularFile(withContents: data, preferredFilename: component)
-                } else {
-                  // Directory component
-                  if let existingDir = currentWrapper.fileWrappers?[component] {
-                    currentWrapper = existingDir
-                  } else {
-                    let newDir = FileWrapper(directoryWithFileWrappers: [:])
-                    newDir.preferredFilename = component
-                    currentWrapper.addFileWrapper(newDir)
-                    currentWrapper = newDir
-                  }
-                }
-              }
-            }
-          }
-          
-          func addPathItemFiles(_ files: OrderedDictionary<String, Referenceable<PathItem>>?) {
-            guard let files = files else { return }
-            
-            for (filePath, referenceablePathItem) in files {
-              // Skip the main OpenAPI file to avoid duplication
-              if filePath == mainFileName {
-                continue
-              }
-              
-              // Extract the PathItem from the Referenceable
-              guard case let .value(pathItem) = referenceablePathItem else {
-                continue // Skip references, only handle direct values
-              }
-              
-              let encoder = YAMLEncoder()
-              encoder.orderedDictionaryCodingStrategy = .keyedContainer
-              let data = try! encoder.encode(pathItem).data(using: .utf8)!
-              
-              // Use subdirectories from PathItem if available, otherwise use original filePath
-              let pathComponents: [String]
-              if let subdirectories = pathItem.subdirectories, !subdirectories.isEmpty {
-                // Reconstruct path using subdirectories
-                let fileName = (filePath as NSString).lastPathComponent
-                pathComponents = ["paths"] + subdirectories + [fileName]
-              } else {
-                // Use original filePath
-                pathComponents = filePath.split(separator: "/").map(String.init)
-              }
-              
-              var currentWrapper = directoryWrapper
-              
-              // Navigate/create directory structure
-              for (index, component) in pathComponents.enumerated() {
-                if index == pathComponents.count - 1 {
-                  // Last component is the file
-                  currentWrapper.addRegularFile(withContents: data, preferredFilename: component)
-                } else {
-                  // Directory component
-                  if let existingDir = currentWrapper.fileWrappers?[component] {
-                    currentWrapper = existingDir
-                  } else {
-                    let newDir = FileWrapper(directoryWithFileWrappers: [:])
-                    newDir.preferredFilename = component
-                    currentWrapper.addFileWrapper(newDir)
-                    currentWrapper = newDir
-                  }
-                }
-              }
-            }
-          }
-          
-          // Add all component types
-          addComponentFiles(componentFiles.schemas)
-          addComponentFiles(componentFiles.responses)
-          addComponentFiles(componentFiles.parameters)
-          addComponentFiles(componentFiles.examples)
-          addComponentFiles(componentFiles.requestBodies)
-          addComponentFiles(componentFiles.headers)
-          addComponentFiles(componentFiles.securitySchemes)
-          addComponentFiles(componentFiles.links)
-          addComponentFiles(componentFiles.callbacks)
-          addPathItemFiles(componentFiles.pathItems)
-        }
-        
-        return directoryWrapper
-      } else {
+      guard configuration.contentType == .folder else {
         // Write as a single file
         let format: SerializationFormat = configuration.contentType == .json ? .json : .yaml
         let data = try serialize(format: format)
         return FileWrapper(regularFileWithContents: data)
       }
+
+      // Create directory wrapper
+      let directoryWrapper = FileWrapper(directoryWithFileWrappers: [:])
+
+      // Determine the main file format - prefer YAML for directories
+      let mainFileName = "openapi.yaml"
+      let mainFileData = try serialize(format: .yaml)
+      directoryWrapper.addRegularFile(withContents: mainFileData, preferredFilename: mainFileName)
+
+      // Add component files if available
+      if let componentFiles = componentFiles {
+        func addComponentFiles<T: Encodable>(_ files: OrderedDictionary<String, T>?) {
+          guard let files = files else { return }
+
+          for (filePath, component) in files {
+            // Skip the main OpenAPI file to avoid duplication
+            if filePath == mainFileName {
+              continue
+            }
+
+            let encoder = YAMLEncoder()
+            encoder.orderedDictionaryCodingStrategy = .keyedContainer
+            let data = try! encoder.encode(component).data(using: .utf8)!
+
+            // Create nested directory structure if needed
+            let pathComponents = filePath.split(separator: "/").map(String.init)
+            var currentWrapper = directoryWrapper
+
+            // Navigate/create directory structure
+            for (index, component) in pathComponents.enumerated() {
+              if index == pathComponents.count - 1 {
+                // Last component is the file
+                currentWrapper.addRegularFile(withContents: data, preferredFilename: component)
+              } else {
+                // Directory component
+                if let existingDir = currentWrapper.fileWrappers?[component] {
+                  currentWrapper = existingDir
+                } else {
+                  let newDir = FileWrapper(directoryWithFileWrappers: [:])
+                  newDir.preferredFilename = component
+                  currentWrapper.addFileWrapper(newDir)
+                  currentWrapper = newDir
+                }
+              }
+            }
+          }
+        }
+
+        func addPathItemFiles(_ files: OrderedDictionary<String, Referenceable<PathItem>>?) {
+          guard let files = files else { return }
+
+          for (filePath, referenceablePathItem) in files {
+            // Skip the main OpenAPI file to avoid duplication
+            if filePath == mainFileName {
+              continue
+            }
+
+            // Extract the PathItem from the Referenceable
+            guard case let .value(pathItem) = referenceablePathItem else {
+              continue // Skip references, only handle direct values
+            }
+
+            let encoder = YAMLEncoder()
+            encoder.orderedDictionaryCodingStrategy = .keyedContainer
+            let data = try! encoder.encode(pathItem).data(using: .utf8)!
+
+            // Use subdirectories from PathItem if available, otherwise use original filePath
+            let pathComponents: [String]
+            if let subdirectories = pathItem.subdirectories, !subdirectories.isEmpty {
+              // Reconstruct path using subdirectories
+              let fileName = (filePath as NSString).lastPathComponent
+              pathComponents = ["paths"] + subdirectories + [fileName]
+            } else {
+              // Use original filePath
+              pathComponents = filePath.split(separator: "/").map(String.init)
+            }
+
+            var currentWrapper = directoryWrapper
+
+            // Navigate/create directory structure
+            for (index, component) in pathComponents.enumerated() {
+              if index == pathComponents.count - 1 {
+                // Last component is the file
+                currentWrapper.addRegularFile(withContents: data, preferredFilename: component)
+              } else {
+                // Directory component
+                if let existingDir = currentWrapper.fileWrappers?[component] {
+                  currentWrapper = existingDir
+                } else {
+                  let newDir = FileWrapper(directoryWithFileWrappers: [:])
+                  newDir.preferredFilename = component
+                  currentWrapper.addFileWrapper(newDir)
+                  currentWrapper = newDir
+                }
+              }
+            }
+          }
+        }
+
+        // Add all component types
+        addComponentFiles(componentFiles.schemas)
+        addComponentFiles(componentFiles.responses)
+        addComponentFiles(componentFiles.parameters)
+        addComponentFiles(componentFiles.examples)
+        addComponentFiles(componentFiles.requestBodies)
+        addComponentFiles(componentFiles.headers)
+        addComponentFiles(componentFiles.securitySchemes)
+        addComponentFiles(componentFiles.links)
+        addComponentFiles(componentFiles.callbacks)
+        addPathItemFiles(componentFiles.pathItems)
+      }
+
+      return directoryWrapper
     }
   }
 }

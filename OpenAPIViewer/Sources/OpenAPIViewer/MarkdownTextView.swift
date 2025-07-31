@@ -32,7 +32,7 @@ struct MarkdownTextView: View {
     RichTextEditor(markdown: $markdown, fixedHeight: true)
       .richTextOverscroll(0)
       .richTextEditable(editable)
-      .frame(width: 600)
+      .frame(maxWidth: 600)
       .padding(.trailing, containsHeading ? -(fontSize(from: font) + 4) : -28)
       .offset(x: containsHeading ? 0 : -(fontSize(from: font) + 6), y: -10)
   }

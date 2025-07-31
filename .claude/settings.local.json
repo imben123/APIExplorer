@@ -18,7 +18,8 @@
       "WebFetch(domain:github.com)",
       "Bash(swift run:*)",
       "Bash(swift package:*)",
-      "Bash(swift:*)"
+      "Bash(swift:*)",
+      "Bash(grep:*)"
     ],
     "deny": []
   }

@@ -30,16 +30,16 @@ public extension OpenAPI {
     public let `enum`: [OrderedJSONValue]?
     
     // Schema composition
-    public let allOf: [Schema]?
-    public let oneOf: [Schema]?
-    public let anyOf: [Schema]?
+    public let allOf: [Referenceable<Schema>]?
+    public let oneOf: [Referenceable<Schema>]?
+    public let anyOf: [Referenceable<Schema>]?
     public let not: IndirectSchema?
     
     // Type-specific properties
     public let type: SchemaType?
     public let format: String?
     public let items: IndirectSchema?
-    public let properties: OrderedDictionary<String, Schema>?
+    public let properties: OrderedDictionary<String, Referenceable<Schema>>?
     public let additionalProperties: AdditionalProperties?
     public let description: String?
     public let `default`: OrderedJSONValue?
@@ -82,14 +82,14 @@ public extension OpenAPI {
       minProperties: Int? = nil,
       required: [String]? = nil,
       enum: [OrderedJSONValue]? = nil,
-      allOf: [Schema]? = nil,
-      oneOf: [Schema]? = nil,
-      anyOf: [Schema]? = nil,
+      allOf: [Referenceable<Schema>]? = nil,
+      oneOf: [Referenceable<Schema>]? = nil,
+      anyOf: [Referenceable<Schema>]? = nil,
       not: IndirectSchema? = nil,
       type: SchemaType? = nil,
       format: String? = nil,
       items: IndirectSchema? = nil,
-      properties: OrderedDictionary<String, Schema>? = nil,
+      properties: OrderedDictionary<String, Referenceable<Schema>>? = nil,
       additionalProperties: AdditionalProperties? = nil,
       description: String? = nil,
       default: OrderedJSONValue? = nil,
@@ -154,14 +154,14 @@ public extension OpenAPI {
   /// Represents additional properties in a schema.
   indirect enum AdditionalProperties: Model {
     case boolean(Bool)
-    case schema(Schema)
+    case schema(Referenceable<Schema>)
     
     public init(from decoder: Decoder) throws {
       let container = try decoder.singleValueContainer()
       if let boolValue = try? container.decode(Bool.self) {
         self = .boolean(boolValue)
       } else {
-        let schemaValue = try container.decode(Schema.self)
+        let schemaValue = try container.decode(Referenceable<Schema>.self)
         self = .schema(schemaValue)
       }
     }
@@ -180,13 +180,13 @@ public extension OpenAPI {
   /// Indirect wrapper for Schema to handle recursive references.
   indirect enum IndirectSchema: Model {
     case none
-    case some(Schema)
+    case some(Referenceable<Schema>)
 
     public init(from decoder: Decoder) throws {
       if let _ = try? decoder.singleValueContainer().decodeNil() {
         self = .none
       } else {
-        let schema = try Schema(from: decoder)
+        let schema = try Referenceable<Schema>(from: decoder)
         self = .some(schema)
       }
     }

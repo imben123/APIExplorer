@@ -60,6 +60,6 @@ struct ResponseExampleContentView: View {
       RoundedRectangle(cornerRadius: 8)
         .fill(.secondary.opacity(0.1))
     )
-    .frame(maxWidth: .infinity, maxHeight: 600)
+    .frame(maxWidth: .infinity)
   }
 }
