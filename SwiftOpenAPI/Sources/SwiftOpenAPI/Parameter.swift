@@ -5,6 +5,7 @@
 //  Created by Ben Davis on 28/07/2025.
 //
 
+import Collections
 import SwiftToolbox
 
 public extension OpenAPI {
@@ -44,10 +45,10 @@ public extension OpenAPI {
     public let example: OrderedJSONValue?
     
     /// Examples of the parameter's potential value.
-    public let examples: [String: Referenceable<Example>]?
+    public let examples: OrderedDictionary<String, Referenceable<Example>>?
     
     /// A map containing the representations for the parameter.
-    public let content: [String: MediaType]?
+    public let content: OrderedDictionary<String, MediaType>?
     
     public init(
       name: String,
@@ -61,8 +62,8 @@ public extension OpenAPI {
       allowReserved: Bool? = nil,
       schema: Referenceable<Schema>? = nil,
       example: OrderedJSONValue? = nil,
-      examples: [String: Referenceable<Example>]? = nil,
-      content: [String: MediaType]? = nil
+      examples: OrderedDictionary<String, Referenceable<Example>>? = nil,
+      content: OrderedDictionary<String, MediaType>? = nil
     ) {
       self.name = name
       self.in = `in`

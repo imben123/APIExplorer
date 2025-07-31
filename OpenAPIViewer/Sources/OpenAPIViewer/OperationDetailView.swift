@@ -7,6 +7,7 @@
 
 import SwiftUI
 import SwiftOpenAPI
+import RichTextView
 
 struct OperationDetailView: View {
   let path: String
@@ -75,7 +76,7 @@ struct OperationDetailView: View {
                 Text("Description")
                   .font(.headline)
                 
-                Text(description)
+                MarkdownTextView(markdown: description)
                   .font(.body)
                   .foregroundColor(.secondary)
               }
@@ -97,16 +98,10 @@ struct OperationDetailView: View {
             
             // Request Body
             if let requestBody = operationDetails?.requestBody?.resolve(in: document) {
-              VStack(alignment: .leading, spacing: 8) {
-                Text("Request Body")
-                  .font(.headline)
-                
-                if let description = requestBody.description {
-                  Text(description)
-                    .font(.body)
-                    .foregroundColor(.secondary)
-                }
-              }
+              RequestBodyExampleView(
+                requestBody: requestBody,
+                document: document
+              )
             }
             
             Spacer()

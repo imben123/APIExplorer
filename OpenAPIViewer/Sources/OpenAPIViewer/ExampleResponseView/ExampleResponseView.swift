@@ -8,6 +8,7 @@
 import SwiftUI
 import SwiftOpenAPI
 import SwiftToolbox
+import Collections
 
 struct ExampleResponseView: View {
   let operation: OpenAPI.Operation?

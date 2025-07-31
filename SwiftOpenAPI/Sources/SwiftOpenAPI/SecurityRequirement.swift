@@ -5,21 +5,22 @@
 //  Created by Ben Davis on 28/07/2025.
 //
 
+import Collections
 import SwiftToolbox
 
 public extension OpenAPI {
   /// Lists the required security schemes to execute this operation.
   struct SecurityRequirement: Model {
     /// Each name MUST correspond to a security scheme which is declared in the Security Schemes under the Components Object.
-    public let requirements: [String: [String]]
+    public let requirements: OrderedDictionary<String, [String]>
     
-    public init(requirements: [String: [String]]) {
+    public init(requirements: OrderedDictionary<String, [String]>) {
       self.requirements = requirements
     }
     
     public init(from decoder: Decoder) throws {
       let container = try decoder.container(keyedBy: OpenAPI.DynamicCodingKey.self)
-      var requirements: [String: [String]] = [:]
+      var requirements: OrderedDictionary<String, [String]> = [:]
       
       for key in container.allKeys {
         requirements[key.stringValue] = try container.decode([String].self, forKey: key)

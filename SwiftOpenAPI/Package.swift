@@ -19,7 +19,11 @@ let package = Package(
     .package(url: "https://github.com/imben123/swift-collections", branch: "feature/ordered-dictionary-codable-strategy")
   ],
   targets: [
-    .target(name: "SwiftOpenAPI", dependencies: ["SwiftToolbox", "Yams"]),
+    .target(name: "SwiftOpenAPI", dependencies: [
+      "SwiftToolbox", 
+      "Yams",
+      .product(name: "Collections", package: "swift-collections")
+    ]),
     .executableTarget(
       name: "OpenAPIParser",
       dependencies: [

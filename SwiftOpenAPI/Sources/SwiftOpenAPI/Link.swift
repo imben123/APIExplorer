@@ -5,6 +5,7 @@
 //  Created by Ben Davis on 28/07/2025.
 //
 
+import Collections
 import SwiftToolbox
 
 public extension OpenAPI {
@@ -17,7 +18,7 @@ public extension OpenAPI {
     public let operationId: String?
     
     /// A map representing parameters to pass to an operation as specified with operationId or identified via operationRef.
-    public let parameters: [String: OrderedJSONValue]?
+    public let parameters: OrderedDictionary<String, OrderedJSONValue>?
     
     /// A literal value or expression to use as a request body when calling the target operation.
     public let requestBody: OrderedJSONValue?
@@ -31,7 +32,7 @@ public extension OpenAPI {
     public init(
       operationRef: String? = nil,
       operationId: String? = nil,
-      parameters: [String: OrderedJSONValue]? = nil,
+      parameters: OrderedDictionary<String, OrderedJSONValue>? = nil,
       requestBody: OrderedJSONValue? = nil,
       description: String? = nil,
       server: Server? = nil

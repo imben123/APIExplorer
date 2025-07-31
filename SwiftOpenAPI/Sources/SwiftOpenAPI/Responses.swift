@@ -5,6 +5,7 @@
 //  Created by Ben Davis on 28/07/2025.
 //
 
+import Collections
 import SwiftToolbox
 
 public extension OpenAPI {
@@ -14,11 +15,11 @@ public extension OpenAPI {
     public let `default`: Referenceable<Response>?
     
     /// Any HTTP status codes can be used as the property name, but only one property per code, to describe the expected response for that HTTP status code.
-    public let responses: [String: Referenceable<Response>]
+    public let responses: OrderedDictionary<String, Referenceable<Response>>
     
     public init(
       default: Referenceable<Response>? = nil,
-      responses: [String: Referenceable<Response>]
+      responses: OrderedDictionary<String, Referenceable<Response>>
     ) {
       self.default = `default`
       self.responses = responses
@@ -27,7 +28,7 @@ public extension OpenAPI {
     public init(from decoder: Decoder) throws {
       let container = try decoder.container(keyedBy: OpenAPI.DynamicCodingKey.self)
       
-      var responses: [String: Referenceable<Response>] = [:]
+      var responses: OrderedDictionary<String, Referenceable<Response>> = [:]
       var defaultResponse: Referenceable<Response>?
       
       for key in container.allKeys {

@@ -7,6 +7,7 @@
 
 import SwiftUI
 import SwiftOpenAPI
+import Collections
 
 public struct OpenAPIDocumentView: View {
   @Binding var document: OpenAPI.Document

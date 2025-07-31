@@ -5,6 +5,7 @@
 //  Created by Ben Davis on 28/07/2025.
 //
 
+import Collections
 import SwiftToolbox
 
 public extension OpenAPI {
@@ -17,12 +18,12 @@ public extension OpenAPI {
     public let description: String?
     
     /// A map between a variable name and its value.
-    public let variables: [String: ServerVariable]?
+    public let variables: OrderedDictionary<String, ServerVariable>?
     
     public init(
       url: String,
       description: String? = nil,
-      variables: [String: ServerVariable]? = nil
+      variables: OrderedDictionary<String, ServerVariable>? = nil
     ) {
       self.url = url
       self.description = description

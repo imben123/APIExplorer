@@ -7,6 +7,7 @@
 
 import SwiftUI
 import SwiftOpenAPI
+import RichTextView
 
 struct ParameterRow: View {
   let parameter: OpenAPI.Parameter
@@ -40,7 +41,7 @@ struct ParameterRow: View {
       }
       
       if let description = parameter.description {
-        Text(description)
+        MarkdownTextView(markdown: description)
           .font(.caption)
           .foregroundColor(.secondary)
       }

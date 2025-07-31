@@ -5,6 +5,7 @@
 //  Created by Ben Davis on 28/07/2025.
 //
 
+import Collections
 import SwiftToolbox
 
 public extension OpenAPI {
@@ -35,7 +36,7 @@ public extension OpenAPI {
     public let responses: Responses?
     
     /// A map of possible out-of band callbacks related to the parent operation.
-    public let callbacks: [String: Referenceable<Callback>]?
+    public let callbacks: OrderedDictionary<String, Referenceable<Callback>>?
     
     /// Declares this operation to be deprecated.
     public let deprecated: Bool?
@@ -55,7 +56,7 @@ public extension OpenAPI {
       parameters: [Referenceable<Parameter>]? = nil,
       requestBody: Referenceable<RequestBody>? = nil,
       responses: Responses? = nil,
-      callbacks: [String: Referenceable<Callback>]? = nil,
+      callbacks: OrderedDictionary<String, Referenceable<Callback>>? = nil,
       deprecated: Bool? = nil,
       security: [SecurityRequirement]? = nil,
       servers: [Server]? = nil

@@ -7,9 +7,10 @@
 
 import SwiftUI
 import SwiftOpenAPI
+import Collections
 
 struct ResponseContentView: View {
-  let content: [String: OpenAPI.MediaType]
+  let content: OrderedDictionary<String, OpenAPI.MediaType>
   let document: OpenAPI.Document
   
   var body: some View {

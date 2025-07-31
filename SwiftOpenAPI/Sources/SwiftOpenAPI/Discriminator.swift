@@ -5,6 +5,7 @@
 //  Created by Ben Davis on 28/07/2025.
 //
 
+import Collections
 import SwiftToolbox
 
 public extension OpenAPI {
@@ -14,11 +15,11 @@ public extension OpenAPI {
     public let propertyName: String
     
     /// An object to hold mappings between payload values and schema names or references.
-    public let mapping: [String: String]?
+    public let mapping: OrderedDictionary<String, String>?
     
     public init(
       propertyName: String,
-      mapping: [String: String]? = nil
+      mapping: OrderedDictionary<String, String>? = nil
     ) {
       self.propertyName = propertyName
       self.mapping = mapping

@@ -5,6 +5,7 @@
 //  Created by Ben Davis on 28/07/2025.
 //
 
+import Collections
 import SwiftToolbox
 
 public extension OpenAPI {
@@ -20,13 +21,13 @@ public extension OpenAPI {
     public let refreshUrl: String?
     
     /// The available scopes for the OAuth2 security scheme.
-    public let scopes: [String: String]
+    public let scopes: OrderedDictionary<String, String>
     
     public init(
       authorizationUrl: String? = nil,
       tokenUrl: String? = nil,
       refreshUrl: String? = nil,
-      scopes: [String: String]
+      scopes: OrderedDictionary<String, String>
     ) {
       self.authorizationUrl = authorizationUrl
       self.tokenUrl = tokenUrl

@@ -10,6 +10,7 @@ import SwiftToolbox
 import Yams
 import SwiftUI
 import UniformTypeIdentifiers
+import Collections
 
 public extension OpenAPI {
   /// The root object of the OpenAPI specification document.
@@ -27,10 +28,10 @@ public extension OpenAPI {
     public let servers: [Server]?
     
     /// The available paths and operations for the API.
-    public let paths: [String: Referenceable<PathItem>]?
+    public let paths: OrderedDictionary<String, Referenceable<PathItem>>?
 
     /// The incoming webhooks that MAY be received as part of this API and that the API consumer MAY choose to implement.
-    public let webhooks: [String: Referenceable<PathItem>]?
+    public let webhooks: OrderedDictionary<String, Referenceable<PathItem>>?
 
     /// An element to hold various schemas for the document.
     public let components: Components?
@@ -67,8 +68,8 @@ public extension OpenAPI {
       info: Info,
       jsonSchemaDialect: String? = nil,
       servers: [Server]? = nil,
-      paths: [String: Referenceable<PathItem>]? = nil,
-      webhooks: [String: Referenceable<PathItem>]? = nil,
+      paths: OrderedDictionary<String, Referenceable<PathItem>>? = nil,
+      webhooks: OrderedDictionary<String, Referenceable<PathItem>>? = nil,
       components: Components? = nil,
       security: [SecurityRequirement]? = nil,
       tags: [Tag]? = nil,
@@ -95,8 +96,8 @@ public extension OpenAPI {
       info = try container.decode(Info.self, forKey: .info)
       jsonSchemaDialect = try container.decodeIfPresent(String.self, forKey: .jsonSchemaDialect)
       servers = try container.decodeIfPresent([Server].self, forKey: .servers)
-      paths = try container.decodeIfPresent([String: Referenceable<PathItem>].self, forKey: .paths)
-      webhooks = try container.decodeIfPresent([String: Referenceable<PathItem>].self, forKey: .webhooks)
+      paths = try container.decodeIfPresent(OrderedDictionary<String, Referenceable<PathItem>>.self, forKey: .paths)
+      webhooks = try container.decodeIfPresent(OrderedDictionary<String, Referenceable<PathItem>>.self, forKey: .webhooks)
       components = try container.decodeIfPresent(Components.self, forKey: .components)
       security = try container.decodeIfPresent([SecurityRequirement].self, forKey: .security)
       tags = try container.decodeIfPresent([Tag].self, forKey: .tags)
@@ -137,16 +138,16 @@ public extension OpenAPI {
       }
       
       // Initialize component collections
-      var schemas: [String: Schema] = [:]
-      var responses: [String: Response] = [:]
-      var parameters: [String: Parameter] = [:]
-      var examples: [String: Example] = [:]
-      var requestBodies: [String: RequestBody] = [:]
-      var headers: [String: Header] = [:]
-      var securitySchemes: [String: SecurityScheme] = [:]
-      var links: [String: Link] = [:]
-      var callbacks: [String: Callback] = [:]
-      var pathItems: [String: PathItem] = [:]
+      var schemas: OrderedDictionary<String, Schema> = [:]
+      var responses: OrderedDictionary<String, Response> = [:]
+      var parameters: OrderedDictionary<String, Parameter> = [:]
+      var examples: OrderedDictionary<String, Example> = [:]
+      var requestBodies: OrderedDictionary<String, RequestBody> = [:]
+      var headers: OrderedDictionary<String, Header> = [:]
+      var securitySchemes: OrderedDictionary<String, SecurityScheme> = [:]
+      var links: OrderedDictionary<String, Link> = [:]
+      var callbacks: OrderedDictionary<String, Callback> = [:]
+      var pathItems: OrderedDictionary<String, PathItem> = [:]
       
       func parseFile<T: Decodable>(_ type: T.Type, from data: Data, fileName: String) throws -> T {
         let fileExtension = (fileName as NSString).pathExtension.lowercased()
@@ -383,7 +384,7 @@ public extension OpenAPI {
 
         // Add component files if available
         if let componentFiles = componentFiles {
-          func addComponentFiles<T: Encodable>(_ files: [String: T]?) {
+          func addComponentFiles<T: Encodable>(_ files: OrderedDictionary<String, T>?) {
             guard let files = files else { return }
             
             for (filePath, component) in files {
@@ -420,7 +421,7 @@ public extension OpenAPI {
             }
           }
           
-          func addPathItemFiles(_ files: [String: Referenceable<PathItem>]?) {
+          func addPathItemFiles(_ files: OrderedDictionary<String, Referenceable<PathItem>>?) {
             guard let files = files else { return }
             
             for (filePath, referenceablePathItem) in files {

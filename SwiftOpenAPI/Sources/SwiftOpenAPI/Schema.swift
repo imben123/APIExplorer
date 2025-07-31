@@ -5,6 +5,7 @@
 //  Created by Ben Davis on 28/07/2025.
 //
 
+import Collections
 import SwiftToolbox
 
 public extension OpenAPI {
@@ -38,7 +39,7 @@ public extension OpenAPI {
     public let type: SchemaType?
     public let format: String?
     public let items: IndirectSchema?
-    public let properties: [String: Schema]?
+    public let properties: OrderedDictionary<String, Schema>?
     public let additionalProperties: AdditionalProperties?
     public let description: String?
     public let `default`: OrderedJSONValue?
@@ -88,7 +89,7 @@ public extension OpenAPI {
       type: SchemaType? = nil,
       format: String? = nil,
       items: IndirectSchema? = nil,
-      properties: [String: Schema]? = nil,
+      properties: OrderedDictionary<String, Schema>? = nil,
       additionalProperties: AdditionalProperties? = nil,
       description: String? = nil,
       default: OrderedJSONValue? = nil,

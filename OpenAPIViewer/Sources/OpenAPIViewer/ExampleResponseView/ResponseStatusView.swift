@@ -7,6 +7,7 @@
 
 import SwiftUI
 import SwiftOpenAPI
+import RichTextView
 
 struct ResponseStatusView: View {
   let statusCode: String
@@ -19,7 +20,7 @@ struct ResponseStatusView: View {
         .font(.subheadline.bold())
         .padding(.horizontal)
       
-      Text(response.description)
+      MarkdownTextView(markdown: response.description)
         .font(.caption)
         .foregroundColor(.secondary)
         .padding(.horizontal)

@@ -30,6 +30,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		B5030E6B2E3BBE12005FBFB5 /* RichTextView */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = RichTextView; path = ../RichTextView; sourceTree = SOURCE_ROOT; };
 		B5D6716C2E37B38000168357 /* APIExplorer.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = APIExplorer.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		B5D671792E37B38100168357 /* APIExplorerTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = APIExplorerTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		B5D671832E37B38200168357 /* APIExplorerUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = APIExplorerUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -110,6 +111,7 @@
 				B5D6716D2E37B38000168357 /* Products */,
 				B5E97E9F2E37D0E000411121 /* OpenAPIViewer */,
 				B5E97EA02E37D0E000411121 /* SwiftOpenAPI */,
+				B5030E6B2E3BBE12005FBFB5 /* RichTextView */,
 				B5E97F3B2E39276E00411121 /* AppToolbox */,
 				B5E97EB32E37D2AB00411121 /* SwiftToolbox */,
 				B5E97EB42E38B50D00411121 /* Frameworks */,

@@ -1,5 +1,5 @@
 {
-  "originHash" : "613697e02a98404d27c40147dcecec90ade4672a243940a379509adc652178a1",
+  "originHash" : "675d5c5f8f0b0edbe54a0edbaf9c6259aa261ed366d54a8387e4386eedf22c67",
   "pins" : [
     {
       "identity" : "swift-argument-parser",
@@ -26,6 +26,15 @@
       "state" : {
         "branch" : "main",
         "revision" : "3a206bab71f32e0e7965979d88882df108efa10d"
+      }
+    },
+    {
+      "identity" : "yams",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/imben123/Yams",
+      "state" : {
+        "branch" : "main",
+        "revision" : "8f76aa16d8a8f22930c33ba53572037d2d414d64"
       }
     }
   ],
