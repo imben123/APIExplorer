@@ -11,8 +11,10 @@ import RichTextView
 
 struct ResponseStatusView: View {
   let statusCode: String
-  let response: OpenAPI.Response
+  @Binding var response: OpenAPI.Response
   let document: OpenAPI.Document
+  
+  @Environment(\.editMode) private var isEditMode
   
   var body: some View {
     VStack(alignment: .leading, spacing: 8) {
@@ -20,10 +22,20 @@ struct ResponseStatusView: View {
         .font(.subheadline.bold())
         .padding(.horizontal)
       
-      MarkdownTextView(markdown: response.description)
-        .font(.caption)
-        .foregroundColor(.secondary)
-        .padding(.horizontal)
+      if isEditMode {
+        MarkdownTextView(markdown: Binding(
+          get: { response.description },
+          set: { response.description = $0 }
+        ), editable: true)
+          .font(.caption)
+          .foregroundColor(.secondary)
+          .padding(.horizontal)
+      } else {
+        MarkdownTextView(markdown: response.description)
+          .font(.caption)
+          .foregroundColor(.secondary)
+          .padding(.horizontal)
+      }
       
       if let content = response.content {
         ResponseContentView(content: content, document: document)

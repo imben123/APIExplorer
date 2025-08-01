@@ -39,7 +39,7 @@ public extension OpenAPI {
     public let callbacks: OrderedDictionary<String, Referenceable<Callback>>?
 
     /// An object to hold reusable Path Item Objects.
-    public let pathItems: OrderedDictionary<String, Referenceable<PathItem>>?
+    public var pathItems: OrderedDictionary<String, Referenceable<PathItem>>?
 
     public init(
       schemas: OrderedDictionary<String, Referenceable<Schema>>? = nil,

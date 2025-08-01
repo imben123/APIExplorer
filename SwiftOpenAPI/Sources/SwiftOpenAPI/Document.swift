@@ -28,7 +28,7 @@ public extension OpenAPI {
     public let servers: [Server]?
     
     /// The available paths and operations for the API.
-    public let paths: OrderedDictionary<String, Referenceable<PathItem>>?
+    public var paths: OrderedDictionary<String, Referenceable<PathItem>>?
 
     /// The incoming webhooks that MAY be received as part of this API and that the API consumer MAY choose to implement.
     public let webhooks: OrderedDictionary<String, Referenceable<PathItem>>?
@@ -62,7 +62,21 @@ public extension OpenAPI {
       case externalDocs
       // componentFiles is intentionally excluded from Codable - it's not part of OpenAPI spec
     }
-    
+
+    public subscript(path ref: String) -> PathItem {
+      get {
+        paths![ref]!.resolve(in: self)!
+      }
+      set {
+        if let ref = paths![ref]!.ref {
+          let normalizedRef = ref.hasPrefix("./") ? String(ref.dropFirst(2)) : ref
+          componentFiles!.pathItems![normalizedRef]!.value = newValue
+        } else {
+          paths![ref]!.value = newValue
+        }
+      }
+    }
+
     public init(
       openapi: String,
       info: Info,

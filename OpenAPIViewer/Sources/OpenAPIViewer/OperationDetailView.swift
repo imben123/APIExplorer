@@ -12,8 +12,13 @@ import RichTextView
 struct OperationDetailView: View {
   let path: String
   let operation: HTTPMethod
-  let pathItem: OpenAPI.PathItem
-  let document: OpenAPI.Document
+  @Binding var document: OpenAPI.Document
+  
+  @Environment(\.editMode) private var isEditMode
+  
+  private var pathItem: OpenAPI.PathItem {
+    document[path: path]
+  }
   
   private var operationDetails: OpenAPI.Operation? {
     switch operation {
@@ -26,6 +31,10 @@ struct OperationDetailView: View {
     case .options: return pathItem.options
     case .trace: return pathItem.trace
     }
+  }
+  
+  private var operationDescriptionBinding: Binding<String> {
+    $document[path: path].description.defaultingToEmptyString
   }
   
   private var methodColor: Color {
@@ -71,12 +80,12 @@ struct OperationDetailView: View {
             }
             
             // Description
-            if let description = operationDetails?.description {
+            if operationDetails?.description != nil || isEditMode {
               VStack(alignment: .leading, spacing: 8) {
                 Text("Description")
                   .font(.headline)
                 
-                MarkdownTextView(markdown: description)
+                MarkdownTextView(markdown: operationDescriptionBinding, editable: isEditMode)
                   .font(.body)
                   .foregroundColor(.secondary)
               }
@@ -120,6 +129,15 @@ struct OperationDetailView: View {
         )
         .frame(width: geometry.size.width * 0.5)
       }
+    }
+  }
+}
+
+extension Optional where Wrapped == String {
+  var defaultingToEmptyString: String {
+    get { self ?? "" }
+    set {
+      self = .some(newValue)
     }
   }
 }

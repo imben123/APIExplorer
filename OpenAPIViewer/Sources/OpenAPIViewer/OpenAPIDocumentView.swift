@@ -14,6 +14,7 @@ public struct OpenAPIDocumentView: View {
   
   @State private var selectedPath: String?
   @State private var selectedOperation: String?
+  @State private var isEditMode: Bool = false
   
   public init(document: Binding<OpenAPI.Document>) {
     self._document = document
@@ -32,15 +33,12 @@ public struct OpenAPIDocumentView: View {
       // Main content area
       if let selectedPath = selectedPath,
          let selectedOperation = selectedOperation,
-         let httpMethod = HTTPMethod(rawValue: selectedOperation),
-         let paths = document.paths,
-         let pathItem = paths[selectedPath]?.resolve(in: document) {
+         let httpMethod = HTTPMethod(rawValue: selectedOperation) {
         
         OperationDetailView(
           path: selectedPath,
           operation: httpMethod,
-          pathItem: pathItem,
-          document: document
+          document: $document
         )
       } else {
         VStack(spacing: 16) {
@@ -62,5 +60,13 @@ public struct OpenAPIDocumentView: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity)
       }
     })
+    .environment(\.editMode, isEditMode)
+    .toolbar {
+      ToolbarItem(placement: .primaryAction) {
+        Button(isEditMode ? "Done" : "Edit") {
+          isEditMode.toggle()
+        }
+      }
+    }
   }
 }

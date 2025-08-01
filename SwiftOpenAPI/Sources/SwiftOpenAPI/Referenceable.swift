@@ -25,11 +25,18 @@ public extension OpenAPI {
     
     /// Returns the actual value if this contains a value, nil if it's a reference.
     public var value: T? {
-      switch self {
-      case .reference:
-        return nil
-      case .value(let val):
-        return val
+      get {
+        switch self {
+        case .reference:
+          return nil
+        case .value(let val):
+          return val
+        }
+      }
+      set {
+        if let newValue {
+          self = .value(newValue)
+        }
       }
     }
     

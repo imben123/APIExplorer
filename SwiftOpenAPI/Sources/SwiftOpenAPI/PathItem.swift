@@ -14,31 +14,31 @@ public extension OpenAPI {
     public let summary: String?
 
     /// An optional, string description, intended to apply to all operations in this path.
-    public let description: String?
+    public var description: String?
 
     /// A definition of a GET operation on this path.
-    public let get: Operation?
+    public var get: Operation?
 
     /// A definition of a PUT operation on this path.
-    public let put: Operation?
+    public var put: Operation?
 
     /// A definition of a POST operation on this path.
-    public let post: Operation?
+    public var post: Operation?
 
     /// A definition of a DELETE operation on this path.
-    public let delete: Operation?
+    public var delete: Operation?
 
     /// A definition of a OPTIONS operation on this path.
-    public let options: Operation?
+    public var options: Operation?
 
     /// A definition of a HEAD operation on this path.
-    public let head: Operation?
+    public var head: Operation?
 
     /// A definition of a PATCH operation on this path.
-    public let patch: Operation?
+    public var patch: Operation?
 
     /// A definition of a TRACE operation on this path.
-    public let trace: Operation?
+    public var trace: Operation?
 
     /// An alternative server array to service operations in this path.
     public let servers: [Server]?

@@ -25,11 +25,27 @@ struct ExampleResponseView: View {
           ForEach(Array(responses.responses.keys.sorted()), id: \.self) { statusCode in
             if let responseRef = responses.responses[statusCode],
                let response = responseRef.resolve(in: document) {
-              ResponseStatusView(
-                statusCode: statusCode,
-                response: response,
-                document: document
-              )
+              // Similar to parameters, only direct values can be edited properly
+              // References would need more complex handling
+              switch responseRef {
+              case .value(let response):
+                ResponseStatusView(
+                  statusCode: statusCode,
+                  response: Binding(
+                    get: { response },
+                    set: { _ in
+                      // TODO: Implement proper response reference editing
+                    }
+                  ),
+                  document: document
+                )
+              case .reference:
+                ResponseStatusView(
+                  statusCode: statusCode,
+                  response: .constant(response),
+                  document: document
+                )
+              }
             }
           }
         } else {

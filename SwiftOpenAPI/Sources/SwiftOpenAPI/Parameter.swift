@@ -18,7 +18,7 @@ public extension OpenAPI {
     public let `in`: ParameterLocation
     
     /// A brief description of the parameter.
-    public let description: String?
+    public var description: String?
     
     /// Determines whether this parameter is mandatory.
     public let required: Bool?

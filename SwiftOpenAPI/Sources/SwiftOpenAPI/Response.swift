@@ -12,7 +12,7 @@ public extension OpenAPI {
   /// Describes a single response from an API Operation.
   struct Response: Model {
     /// A description of the response.
-    public let description: String
+    public var description: String
     
     /// Maps a header name to its definition.
     public let headers: OrderedDictionary<String, Referenceable<Header>>?

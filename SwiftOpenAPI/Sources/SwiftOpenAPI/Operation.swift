@@ -18,7 +18,7 @@ public extension OpenAPI {
     public let summary: String?
     
     /// A verbose explanation of the operation behavior.
-    public let description: String?
+    public var description: String?
     
     /// Additional external documentation for this operation.
     public let externalDocs: ExternalDocumentation?
