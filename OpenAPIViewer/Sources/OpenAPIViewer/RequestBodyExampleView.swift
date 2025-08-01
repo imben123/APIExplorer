@@ -98,6 +98,6 @@ struct RequestBodyExampleContentView: View {
       RoundedRectangle(cornerRadius: 8)
         .fill(.secondary.opacity(0.1))
     )
-    .frame(maxWidth: .infinity, maxHeight: 400)
+    .frame(maxWidth: .infinity)
   }
 }
