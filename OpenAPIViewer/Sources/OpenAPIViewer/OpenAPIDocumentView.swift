@@ -63,8 +63,10 @@ public struct OpenAPIDocumentView: View {
     .environment(\.editMode, isEditMode)
     .toolbar {
       ToolbarItem(placement: .primaryAction) {
-        Button(isEditMode ? "Done" : "Edit") {
+        Button {
           isEditMode.toggle()
+        } label: {
+          Image(systemName: isEditMode ? "checkmark.circle.fill" : "pencil.circle")
         }
       }
     }
