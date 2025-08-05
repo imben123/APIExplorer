@@ -8,6 +8,7 @@
 import SwiftUI
 import SwiftOpenAPI
 import Collections
+import SwiftToolbox
 
 public struct OpenAPIDocumentView: View {
   @Binding var document: OpenAPI.Document
@@ -15,18 +16,27 @@ public struct OpenAPIDocumentView: View {
   @State private var selectedPath: String?
   @State private var selectedOperation: String?
   @State private var isEditMode: Bool = false
-  
+
+  @State private var selectedServer: String = "/"
+  @State var serverVariableValues: OrderedDictionary<String, String> = .init()
+
   public init(document: Binding<OpenAPI.Document>) {
     self._document = document
+    if let server = document.wrappedValue.servers?.first {
+      self.selectedServer = server.url
+      self.serverVariableValues = .init()
+    }
   }
   
   public var body: some View {
     NavigationSplitView(sidebar: {
-      // Left sidebar with paths
-      PathsSidebar(
+      // Left sidebar
+      Sidebar(
         document: document,
         selectedPath: $selectedPath,
-        selectedOperation: $selectedOperation
+        selectedOperation: $selectedOperation,
+        selectedServer: $selectedServer,
+        serverVariableValues: $serverVariableValues
       )
       .frame(minWidth: 260)
     }, detail: {

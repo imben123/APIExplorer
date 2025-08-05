@@ -1,14 +1,14 @@
 //
-//  PathsSidebar.swift
+//  PathsList.swift
 //  OpenAPIViewer
 //
-//  Created by Ben Davis on 29/07/2025.
+//  Created by Ben Davis on 05/08/2025.
 //
 
 import SwiftUI
 import SwiftOpenAPI
 
-struct PathsSidebar: View {
+struct PathsList: View {
   let document: OpenAPI.Document
   @Binding var selectedPath: String?
   @Binding var selectedOperation: String?
@@ -43,13 +43,12 @@ struct PathsSidebar: View {
       }
     }
     .listStyle(.sidebar)
-    .navigationTitle("Paths")
   }
-
+  
   private func isGroupExpanded(group: OpenAPI.Document.PathGroup) -> Bool {
     return group.subdirectory == nil || !collapsedDirectories.contains(group.subdirectory ?? "")
   }
-
+  
   private func toggleDirectory(group: OpenAPI.Document.PathGroup) {
     guard let subdirectory = group.subdirectory else {
       return
@@ -63,14 +62,10 @@ struct PathsSidebar: View {
 }
 
 #Preview {
-  NavigationSplitView(sidebar: {
-    PathsSidebar(
-      document: sampleDocument,
-      selectedPath: .constant(nil),
-      selectedOperation: .constant(nil)
-    )
-    .frame(minWidth: 260)
-  }, detail: {
-    Text("")
-  })
+  PathsList(
+    document: sampleDocument,
+    selectedPath: .constant(nil),
+    selectedOperation: .constant(nil)
+  )
+  .frame(width: 300)
 }

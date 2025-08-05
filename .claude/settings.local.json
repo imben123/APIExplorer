@@ -19,7 +19,9 @@
       "Bash(swift run:*)",
       "Bash(swift package:*)",
       "Bash(swift:*)",
-      "Bash(grep:*)"
+      "Bash(grep:*)",
+      "Bash(true)",
+      "Bash(rmdir:*)"
     ],
     "deny": []
   }
