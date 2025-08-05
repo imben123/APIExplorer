@@ -151,13 +151,6 @@ public extension OpenAPI {
       // componentFiles, originalDataHash, and otherFiles are not encoded to the specification data
     }
     
-    /// Calculates SHA256 hash for the given data
-    /// - Parameter data: The data to hash
-    /// - Returns: Hex string representation of the SHA256 hash
-    private static func calculateHash(for data: Data) -> String {
-      return SHA256.hash(data: data).compactMap { String(format: "%02x", $0) }.joined()
-    }
-    
     /// Creates a Document from a FileWrapper (file or folder)
     /// - Parameter fileWrapper: The FileWrapper containing OpenAPI specification files
     /// - Returns: A parsed Document with external files parsed and categorized
@@ -171,7 +164,7 @@ public extension OpenAPI {
         var document = try parse(from: data)
         // Serialize the parsed document and hash that data for semantic comparison
         let reserializedData = try document.serialize(format: .yaml)
-        document.originalDataHash = Self.calculateHash(for: reserializedData)
+        document.originalDataHash = reserializedData.calculateHash()
         return document
       }
       
@@ -237,7 +230,7 @@ public extension OpenAPI {
                 let encoder = YAMLEncoder()
                 encoder.orderedDictionaryCodingStrategy = .keyedContainer
                 let reserializedData = try encoder.encode(pathItem).data(using: .utf8)!
-                let hash = Self.calculateHash(for: reserializedData)
+                let hash = reserializedData.calculateHash()
                 
                 // Extract subdirectory components (everything between "paths" and the filename)
                 let subdirectories = Array(pathComponents[1..<pathComponents.count-1])
@@ -277,7 +270,7 @@ public extension OpenAPI {
                   let encoder = YAMLEncoder()
                   encoder.orderedDictionaryCodingStrategy = .keyedContainer
                   let reserializedData = try encoder.encode(schema).data(using: .utf8)!
-                  schema.originalDataHash = Self.calculateHash(for: reserializedData)
+                  schema.originalDataHash = reserializedData.calculateHash()
                   schemas[filePath] = schema
                 case "responses":
                   var response = try parseFile(Response.self, from: data, fileName: fileName)
@@ -285,7 +278,7 @@ public extension OpenAPI {
                   let encoder = YAMLEncoder()
                   encoder.orderedDictionaryCodingStrategy = .keyedContainer
                   let reserializedData = try encoder.encode(response).data(using: .utf8)!
-                  response.originalDataHash = Self.calculateHash(for: reserializedData)
+                  response.originalDataHash = reserializedData.calculateHash()
                   responses[filePath] = response
                 case "parameters":
                   var parameter = try parseFile(Parameter.self, from: data, fileName: fileName)
@@ -293,7 +286,7 @@ public extension OpenAPI {
                   let encoder = YAMLEncoder()
                   encoder.orderedDictionaryCodingStrategy = .keyedContainer
                   let reserializedData = try encoder.encode(parameter).data(using: .utf8)!
-                  parameter.originalDataHash = Self.calculateHash(for: reserializedData)
+                  parameter.originalDataHash = reserializedData.calculateHash()
                   parameters[filePath] = parameter
                 case "examples":
                   var example = try parseFile(Example.self, from: data, fileName: fileName)
@@ -301,7 +294,7 @@ public extension OpenAPI {
                   let encoder = YAMLEncoder()
                   encoder.orderedDictionaryCodingStrategy = .keyedContainer
                   let reserializedData = try encoder.encode(example).data(using: .utf8)!
-                  example.originalDataHash = Self.calculateHash(for: reserializedData)
+                  example.originalDataHash = reserializedData.calculateHash()
                   examples[filePath] = example
                 case "requestBodies":
                   var requestBody = try parseFile(RequestBody.self, from: data, fileName: fileName)
@@ -309,7 +302,7 @@ public extension OpenAPI {
                   let encoder = YAMLEncoder()
                   encoder.orderedDictionaryCodingStrategy = .keyedContainer
                   let reserializedData = try encoder.encode(requestBody).data(using: .utf8)!
-                  requestBody.originalDataHash = Self.calculateHash(for: reserializedData)
+                  requestBody.originalDataHash = reserializedData.calculateHash()
                   requestBodies[filePath] = requestBody
                 case "headers":
                   var header = try parseFile(Header.self, from: data, fileName: fileName)
@@ -317,7 +310,7 @@ public extension OpenAPI {
                   let encoder = YAMLEncoder()
                   encoder.orderedDictionaryCodingStrategy = .keyedContainer
                   let reserializedData = try encoder.encode(header).data(using: .utf8)!
-                  header.originalDataHash = Self.calculateHash(for: reserializedData)
+                  header.originalDataHash = reserializedData.calculateHash()
                   headers[filePath] = header
                 case "securitySchemes":
                   var securityScheme = try parseFile(SecurityScheme.self, from: data, fileName: fileName)
@@ -325,7 +318,7 @@ public extension OpenAPI {
                   let encoder = YAMLEncoder()
                   encoder.orderedDictionaryCodingStrategy = .keyedContainer
                   let reserializedData = try encoder.encode(securityScheme).data(using: .utf8)!
-                  securityScheme.originalDataHash = Self.calculateHash(for: reserializedData)
+                  securityScheme.originalDataHash = reserializedData.calculateHash()
                   securitySchemes[filePath] = securityScheme
                 case "links":
                   var link = try parseFile(Link.self, from: data, fileName: fileName)
@@ -333,7 +326,7 @@ public extension OpenAPI {
                   let encoder = YAMLEncoder()
                   encoder.orderedDictionaryCodingStrategy = .keyedContainer
                   let reserializedData = try encoder.encode(link).data(using: .utf8)!
-                  link.originalDataHash = Self.calculateHash(for: reserializedData)
+                  link.originalDataHash = reserializedData.calculateHash()
                   links[filePath] = link
                 case "callbacks":
                   var callback = try parseFile(Callback.self, from: data, fileName: fileName)
@@ -341,7 +334,7 @@ public extension OpenAPI {
                   let encoder = YAMLEncoder()
                   encoder.orderedDictionaryCodingStrategy = .keyedContainer
                   let reserializedData = try encoder.encode(callback).data(using: .utf8)!
-                  callback.originalDataHash = Self.calculateHash(for: reserializedData)
+                  callback.originalDataHash = reserializedData.calculateHash()
                   callbacks[filePath] = callback
                 case "pathItems":
                   var pathItem = try parseFile(PathItem.self, from: data, fileName: fileName)
@@ -350,7 +343,7 @@ public extension OpenAPI {
                   let encoder = YAMLEncoder()
                   encoder.orderedDictionaryCodingStrategy = .keyedContainer
                   let reserializedData = try encoder.encode(pathItem).data(using: .utf8)!
-                  let hash = Self.calculateHash(for: reserializedData)
+                  let hash = reserializedData.calculateHash()
                   
                   // Extract subdirectory components (everything between "components/pathItems" and the filename)
                   let subdirectories = Array(pathComponents[2..<pathComponents.count-1])
@@ -406,7 +399,7 @@ public extension OpenAPI {
           var document = try parse(from: data)
           // Serialize the parsed document and hash that data for semantic comparison
           let reserializedData = try document.serialize(format: .yaml)
-          document.originalDataHash = Self.calculateHash(for: reserializedData)
+          document.originalDataHash = reserializedData.calculateHash()
 
           // Create Components if we have any external files
           var componentFiles: Components? = nil
@@ -476,239 +469,5 @@ public extension OpenAPI {
       }
     }
 
-    /// Serializes the Document to a FileWrapper based on WriteConfiguration
-    /// - Parameter configuration: The write configuration containing content type information
-    /// - Returns: A FileWrapper containing the serialized document
-    /// - Throws: Error if serialization fails
-    public func serialize(configuration: FileDocument.WriteConfiguration) throws -> FileWrapper {
-      // Check if we should write as a directory
-      guard configuration.contentType == .folder else {
-        // Write as a single file
-        let format: SerializationFormat = configuration.contentType == .json ? .json : .yaml
-        let data = try serialize(format: format)
-        
-        // Check if we have stored hash and it matches the new serialized data
-        if let originalHash = originalDataHash,
-           Self.calculateHash(for: data) == originalHash,
-           let existingFile = configuration.existingFile,
-           !existingFile.isDirectory,
-           let originalData = existingFile.regularFileContents {
-          // Content hasn't changed semantically, return original data to preserve formatting
-          return FileWrapper(regularFileWithContents: originalData)
-        }
-        
-        return FileWrapper(regularFileWithContents: data)
-      }
-
-      // Create directory wrapper
-      let directoryWrapper = FileWrapper(directoryWithFileWrappers: [:])
-
-      // Determine the main file format - prefer YAML for directories
-      let mainFileName = "openapi.yaml"
-      let mainFileData = try serialize(format: .yaml)
-      
-      // Check if we can reuse the existing main file
-      let finalMainFileData: Data
-      if let originalHash = originalDataHash,
-         Self.calculateHash(for: mainFileData) == originalHash,
-         let existingFile = configuration.existingFile,
-         existingFile.isDirectory,
-         let existingMainFile = existingFile.fileWrappers?[mainFileName],
-         let existingMainData = existingMainFile.regularFileContents {
-        // Main file hasn't changed semantically, reuse original data to preserve formatting
-        finalMainFileData = existingMainData
-      } else {
-        finalMainFileData = mainFileData
-      }
-      
-      directoryWrapper.addRegularFile(withContents: finalMainFileData, preferredFilename: mainFileName)
-
-      // Add component files if available
-      if let componentFiles = componentFiles {
-        
-        // Helper function to get original data from existing file structure
-        func getOriginalData(for filePath: String, from existingFile: FileWrapper?) -> Data? {
-          guard let existingFile = existingFile, existingFile.isDirectory else { return nil }
-          
-          let pathComponents = filePath.split(separator: "/").map(String.init)
-          var currentWrapper = existingFile
-          
-          // Navigate through directory structure
-          for (index, component) in pathComponents.enumerated() {
-            if index == pathComponents.count - 1 {
-              // Last component is the file - get its data
-              return currentWrapper.fileWrappers?[component]?.regularFileContents
-            } else {
-              // Directory component - navigate deeper
-              guard let nextWrapper = currentWrapper.fileWrappers?[component] else {
-                return nil
-              }
-              currentWrapper = nextWrapper
-            }
-          }
-          return nil
-        }
-        
-        func addComponentFiles<T: Encodable>(_ files: OrderedDictionary<String, T>?) {
-          guard let files = files else { return }
-
-          for (filePath, component) in files {
-            // Skip the main OpenAPI file to avoid duplication
-            if filePath == mainFileName {
-              continue
-            }
-
-            let encoder = YAMLEncoder()
-            encoder.orderedDictionaryCodingStrategy = .keyedContainer
-            let newData = try! encoder.encode(component).data(using: .utf8)!
-            
-            // Check if component conforms to ComponentFileSerializable and has an originalDataHash
-            let finalData: Data
-            if let serializableComponent = component as? ComponentFileSerializable,
-               let originalHash = serializableComponent.originalDataHash,
-               Self.calculateHash(for: newData) == originalHash,
-               let originalData = getOriginalData(for: filePath, from: configuration.existingFile) {
-              // Component hasn't changed semantically, reuse original data
-              finalData = originalData
-            } else {
-              finalData = newData
-            }
-
-            // Create nested directory structure if needed
-            let pathComponents = filePath.split(separator: "/").map(String.init)
-            var currentWrapper = directoryWrapper
-
-            // Navigate/create directory structure
-            for (index, pathComponent) in pathComponents.enumerated() {
-              if index == pathComponents.count - 1 {
-                // Last component is the file
-                currentWrapper.addRegularFile(withContents: finalData, preferredFilename: pathComponent)
-              } else {
-                // Directory component
-                if let existingDir = currentWrapper.fileWrappers?[pathComponent] {
-                  currentWrapper = existingDir
-                } else {
-                  let newDir = FileWrapper(directoryWithFileWrappers: [:])
-                  newDir.preferredFilename = pathComponent
-                  currentWrapper.addFileWrapper(newDir)
-                  currentWrapper = newDir
-                }
-              }
-            }
-          }
-        }
-
-        func addPathItemFiles(_ files: OrderedDictionary<String, Referenceable<PathItem>>?) {
-          guard let files = files else { return }
-
-          for (filePath, referenceablePathItem) in files {
-            // Skip the main OpenAPI file to avoid duplication
-            if filePath == mainFileName {
-              continue
-            }
-
-            // Extract the PathItem from the Referenceable
-            guard case let .value(pathItem) = referenceablePathItem else {
-              continue // Skip references, only handle direct values
-            }
-
-            let encoder = YAMLEncoder()
-            encoder.orderedDictionaryCodingStrategy = .keyedContainer
-            let newData = try! encoder.encode(pathItem).data(using: .utf8)!
-
-            // Use subdirectories from PathItem if available, otherwise use original filePath
-            let pathComponents: [String]
-            if let subdirectories = pathItem.subdirectories, !subdirectories.isEmpty {
-              // Reconstruct path using subdirectories
-              let fileName = (filePath as NSString).lastPathComponent
-              pathComponents = ["paths"] + subdirectories + [fileName]
-            } else {
-              // Use original filePath
-              pathComponents = filePath.split(separator: "/").map(String.init)
-            }
-            
-            // For path items, we need to check against the constructed path components
-            let actualFilePath = pathComponents.joined(separator: "/")
-            
-            // Check if PathItem has an originalDataHash for change detection
-            let finalData: Data
-            if let originalHash = pathItem.originalDataHash,
-               Self.calculateHash(for: newData) == originalHash,
-               let originalData = getOriginalData(for: actualFilePath, from: configuration.existingFile) {
-              // PathItem hasn't changed semantically, reuse original data
-              finalData = originalData
-            } else {
-              finalData = newData
-            }
-            
-            var currentWrapper = directoryWrapper
-
-            // Navigate/create directory structure
-            for (index, pathComponent) in pathComponents.enumerated() {
-              if index == pathComponents.count - 1 {
-                // Last component is the file
-                currentWrapper.addRegularFile(withContents: finalData, preferredFilename: pathComponent)
-              } else {
-                // Directory component
-                if let existingDir = currentWrapper.fileWrappers?[pathComponent] {
-                  currentWrapper = existingDir
-                } else {
-                  let newDir = FileWrapper(directoryWithFileWrappers: [:])
-                  newDir.preferredFilename = pathComponent
-                  currentWrapper.addFileWrapper(newDir)
-                  currentWrapper = newDir
-                }
-              }
-            }
-          }
-        }
-
-        // Add all component types
-        addComponentFiles(componentFiles.schemas?.compactMapValues({ $0.value }))
-        addComponentFiles(componentFiles.responses?.compactMapValues({ $0.value }))
-        addComponentFiles(componentFiles.parameters?.compactMapValues({ $0.value }))
-        addComponentFiles(componentFiles.examples?.compactMapValues({ $0.value }))
-        addComponentFiles(componentFiles.requestBodies?.compactMapValues({ $0.value }))
-        addComponentFiles(componentFiles.headers?.compactMapValues({ $0.value }))
-        addComponentFiles(componentFiles.securitySchemes?.compactMapValues({ $0.value }))
-        addComponentFiles(componentFiles.links?.compactMapValues({ $0.value }))
-        addComponentFiles(componentFiles.callbacks?.compactMapValues({ $0.value }))
-        addPathItemFiles(componentFiles.pathItems)
-      }
-
-      // Add other files if available
-      if let otherFiles = otherFiles {
-        for (filePath, data) in otherFiles {
-          // Skip the main OpenAPI file to avoid duplication
-          if filePath == mainFileName {
-            continue
-          }
-
-          // Create nested directory structure if needed
-          let pathComponents = filePath.split(separator: "/").map(String.init)
-          var currentWrapper = directoryWrapper
-
-          // Navigate/create directory structure
-          for (index, pathComponent) in pathComponents.enumerated() {
-            if index == pathComponents.count - 1 {
-              // Last component is the file
-              currentWrapper.addRegularFile(withContents: data, preferredFilename: pathComponent)
-            } else {
-              // Directory component
-              if let existingDir = currentWrapper.fileWrappers?[pathComponent] {
-                currentWrapper = existingDir
-              } else {
-                let newDir = FileWrapper(directoryWithFileWrappers: [:])
-                newDir.preferredFilename = pathComponent
-                currentWrapper.addFileWrapper(newDir)
-                currentWrapper = newDir
-              }
-            }
-          }
-        }
-      }
-
-      return directoryWrapper
-    }
   }
 }
