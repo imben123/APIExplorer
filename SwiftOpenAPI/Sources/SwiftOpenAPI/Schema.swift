@@ -10,7 +10,7 @@ import SwiftToolbox
 
 public extension OpenAPI {
   /// The Schema Object allows the definition of input and output data types.
-  struct Schema: Model {
+  struct Schema: Model, ComponentFileSerializable {
     // Core JSON Schema properties
     public let title: String?
     public let multipleOf: Double?
@@ -53,6 +53,8 @@ public extension OpenAPI {
     public let externalDocs: ExternalDocumentation?
     public let deprecated: Bool?
     public let xml: XML?
+
+    var originalDataHash: String?
 
     private enum CodingKeys: String, CodingKey {
       case title, multipleOf, maximum, exclusiveMaximum, minimum, exclusiveMinimum

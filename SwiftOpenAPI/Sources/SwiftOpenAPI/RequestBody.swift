@@ -10,7 +10,7 @@ import SwiftToolbox
 
 public extension OpenAPI {
   /// Describes a single request body.
-  struct RequestBody: Model {
+  struct RequestBody: Model, ComponentFileSerializable {
     /// A brief description of the request body.
     public let description: String?
     
@@ -19,7 +19,9 @@ public extension OpenAPI {
     
     /// Determines if the request body is required in the request.
     public let required: Bool?
-    
+
+    var originalDataHash: String?
+
     public init(
       description: String? = nil,
       content: OrderedDictionary<String, MediaType>,
@@ -28,6 +30,10 @@ public extension OpenAPI {
       self.description = description
       self.content = content
       self.required = required
+    }
+
+    enum CodingKeys: CodingKey {
+      case description, content, required
     }
   }
 }

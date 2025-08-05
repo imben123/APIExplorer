@@ -9,7 +9,7 @@ import SwiftToolbox
 
 public extension OpenAPI {
   /// Describes the operations available on a single path.
-  struct PathItem: Model {
+  struct PathItem: Model, ComponentFileSerializable {
     /// An optional, string summary, intended to apply to all operations in this path.
     public let summary: String?
 
@@ -48,7 +48,9 @@ public extension OpenAPI {
 
     /// An array of subdirectory components for organizing paths from referenced files.
     /// This property is not encoded/decoded and is used for preserving file organization.
-    public let subdirectories: [String]?
+    public var subdirectories: [String]?
+
+    var originalDataHash: String?
 
     public init(
       summary: String? = nil,
@@ -79,9 +81,9 @@ public extension OpenAPI {
       self.parameters = parameters
       self.subdirectories = subdirectories
     }
-  }
 
-  private enum CodingKeys: String, CodingKey {
-    case summary, description, get, put, post, delete, options, head, patch, trace, servers, parameters
+    private enum CodingKeys: String, CodingKey {
+      case summary, description, get, put, post, delete, options, head, patch, trace, servers, parameters
+    }
   }
 }

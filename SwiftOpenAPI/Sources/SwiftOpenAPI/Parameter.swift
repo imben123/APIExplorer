@@ -10,7 +10,7 @@ import SwiftToolbox
 
 public extension OpenAPI {
   /// Describes a single operation parameter.
-  struct Parameter: Model {
+  struct Parameter: Model, ComponentFileSerializable {
     /// The name of the parameter.
     public let name: String
     
@@ -49,7 +49,9 @@ public extension OpenAPI {
     
     /// A map containing the representations for the parameter.
     public let content: OrderedDictionary<String, MediaType>?
-    
+
+    var originalDataHash: String?
+
     public init(
       name: String,
       in: ParameterLocation,
@@ -78,6 +80,11 @@ public extension OpenAPI {
       self.example = example
       self.examples = examples
       self.content = content
+    }
+
+    enum CodingKeys: CodingKey {
+      case name, `in`, description, required, deprecated, allowEmptyValue, style,
+           explode, allowReserved, schema, example, examples, content
     }
   }
 

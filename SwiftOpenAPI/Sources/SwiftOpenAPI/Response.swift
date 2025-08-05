@@ -10,7 +10,7 @@ import Collections
 
 public extension OpenAPI {
   /// Describes a single response from an API Operation.
-  struct Response: Model {
+  struct Response: Model, ComponentFileSerializable {
     /// A description of the response.
     public var description: String
     
@@ -22,7 +22,9 @@ public extension OpenAPI {
     
     /// A map of operations links that can be followed from the response.
     public let links: OrderedDictionary<String, Referenceable<Link>>?
-    
+
+    var originalDataHash: String?
+
     public init(
       description: String,
       headers: OrderedDictionary<String, Referenceable<Header>>? = nil,
@@ -33,6 +35,10 @@ public extension OpenAPI {
       self.headers = headers
       self.content = content
       self.links = links
+    }
+
+    enum CodingKeys: CodingKey {
+      case description, headers, content, links
     }
   }
 }

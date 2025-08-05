@@ -9,7 +9,7 @@ import SwiftToolbox
 
 public extension OpenAPI {
   /// Defines a security scheme that can be used by the operations.
-  struct SecurityScheme: Model {
+  struct SecurityScheme: Model, ComponentFileSerializable {
     /// The type of the security scheme.
     public let type: SecuritySchemeType
     
@@ -33,7 +33,9 @@ public extension OpenAPI {
     
     /// OpenId Connect URL to discover OAuth2 configuration values.
     public let openIdConnectUrl: String?
-    
+
+    var originalDataHash: String?
+
     public init(
       type: SecuritySchemeType,
       description: String? = nil,
@@ -52,6 +54,10 @@ public extension OpenAPI {
       self.bearerFormat = bearerFormat
       self.flows = flows
       self.openIdConnectUrl = openIdConnectUrl
+    }
+
+    enum CodingKeys: CodingKey {
+      case type, description, name, `in`, scheme, bearerFormat, flows, openIdConnectUrl
     }
   }
 

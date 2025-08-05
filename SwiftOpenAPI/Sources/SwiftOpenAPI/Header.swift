@@ -10,7 +10,7 @@ import SwiftToolbox
 
 public extension OpenAPI {
   /// The Header Object follows the structure of the Parameter Object.
-  struct Header: Model {
+  struct Header: Model, ComponentFileSerializable {
     /// A brief description of the header.
     public let description: String?
     
@@ -43,7 +43,9 @@ public extension OpenAPI {
     
     /// A map containing the representations for the header.
     public let content: OrderedDictionary<String, MediaType>?
-    
+
+    var originalDataHash: String?
+
     public init(
       description: String? = nil,
       required: Bool? = nil,
@@ -68,6 +70,11 @@ public extension OpenAPI {
       self.example = example
       self.examples = examples
       self.content = content
+    }
+
+    enum CodingKeys: String, CodingKey {
+      case description, required, deprecated, allowEmptyValue, style, explode,
+           allowReserved, schema, example, examples, content
     }
   }
 }

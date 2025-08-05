@@ -10,7 +10,7 @@ import SwiftToolbox
 
 public extension OpenAPI {
   /// The Link object represents a possible design-time link for a response.
-  struct Link: Model {
+  struct Link: Model, ComponentFileSerializable {
     /// A relative or absolute URI reference to an OAS operation.
     public let operationRef: String?
     
@@ -28,7 +28,9 @@ public extension OpenAPI {
     
     /// A server object to be used by the target operation.
     public let server: Server?
-    
+
+    var originalDataHash: String?
+
     public init(
       operationRef: String? = nil,
       operationId: String? = nil,
@@ -43,6 +45,10 @@ public extension OpenAPI {
       self.requestBody = requestBody
       self.description = description
       self.server = server
+    }
+
+    enum CodingKeys: String, CodingKey {
+      case operationRef, operationId, parameters, requestBody, description, server
     }
   }
 }

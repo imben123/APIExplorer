@@ -9,7 +9,7 @@ import SwiftToolbox
 
 public extension OpenAPI {
   /// An object to hold data for example usages.
-  struct Example: Model {
+  struct Example: Model, ComponentFileSerializable {
     /// Short description for the example.
     public let summary: String?
     
@@ -21,7 +21,9 @@ public extension OpenAPI {
     
     /// A URI that points to the literal example.
     public let externalValue: String?
-    
+
+    var originalDataHash: String?
+
     public init(
       summary: String? = nil,
       description: String? = nil,
@@ -32,6 +34,10 @@ public extension OpenAPI {
       self.description = description
       self.value = value
       self.externalValue = externalValue
+    }
+
+    private enum CodingKeys: String, CodingKey {
+      case summary, description, value, externalValue
     }
   }
 }
