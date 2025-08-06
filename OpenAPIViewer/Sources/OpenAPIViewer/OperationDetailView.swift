@@ -34,7 +34,11 @@ struct OperationDetailView: View {
   }
   
   private var operationDescriptionBinding: Binding<String> {
-    $document[path: path].description.defaultingToEmptyString
+    $document[path: path][method: operation].description.defaultingToEmptyString
+  }
+  
+  private var operationSummaryBinding: Binding<String> {
+    $document[path: path][method: operation].summary.defaultingToEmptyString
   }
   
   private var methodColor: Color {
@@ -46,6 +50,16 @@ struct OperationDetailView: View {
     case .patch: return .purple
     case .head, .options, .trace: return .gray
     }
+  }
+  
+  private func addRequestBody() {
+    let newRequestBody = OpenAPI.RequestBody(
+      description: nil,
+      content: [:],
+      required: nil
+    )
+    let requestBodyRef = OpenAPI.Referenceable<OpenAPI.RequestBody>.value(newRequestBody)
+    document[path: path][method: operation].requestBody = requestBodyRef
   }
   
   var body: some View {
@@ -72,10 +86,17 @@ struct OperationDetailView: View {
                 Spacer()
               }
               
-              if let summary = operationDetails?.summary {
-                Text(summary)
-                  .font(.title3)
-                  .foregroundColor(.secondary)
+              if operationDetails?.summary != nil || isEditMode {
+                if isEditMode {
+                  TextField("Operation summary", text: operationSummaryBinding)
+                    .font(.title3)
+                    .textFieldStyle(.plain)
+                    .foregroundColor(.secondary)
+                } else {
+                  Text(operationDetails?.summary ?? "")
+                    .font(.title3)
+                    .foregroundColor(.secondary)
+                }
               }
             }
             
@@ -109,8 +130,22 @@ struct OperationDetailView: View {
             if let requestBody = operationDetails?.requestBody?.resolve(in: document) {
               RequestBodyExampleView(
                 requestBody: requestBody,
-                document: document
+                document: $document,
+                path: path,
+                operation: operation
               )
+            } else if isEditMode {
+              // Add Request Body button in edit mode
+              VStack(alignment: .leading, spacing: 8) {
+                Text("Request Body")
+                  .font(.headline)
+                
+                Button(action: addRequestBody) {
+                  Label("Add Request Body", systemImage: "plus.circle")
+                    .foregroundColor(.accentColor)
+                }
+                .buttonStyle(.plain)
+              }
             }
             
             Spacer()

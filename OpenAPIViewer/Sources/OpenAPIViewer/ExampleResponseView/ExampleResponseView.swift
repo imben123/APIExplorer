@@ -20,6 +20,7 @@ struct ExampleResponseView: View {
         Text("Example Responses")
           .font(.headline)
           .padding(.horizontal)
+          .frame(maxWidth: .infinity, alignment: .leading)
         
         if let responses = operation?.responses {
           ForEach(Array(responses.responses.keys.sorted()), id: \.self) { statusCode in
@@ -53,10 +54,12 @@ struct ExampleResponseView: View {
             .font(.caption)
             .foregroundColor(.secondary)
             .padding(.horizontal)
+            .frame(maxWidth: .infinity, alignment: .leading)
         }
         
         Spacer()
       }
+      .frame(maxWidth: .infinity, alignment: .leading)
       .padding(.top)
     }
     .background(.secondary.opacity(0.05))

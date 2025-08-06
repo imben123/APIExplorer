@@ -2,3 +2,43 @@ openapi: 3.1.1
 info:
   title: Blackwell Data API
   version: 1.0.0
+servers:
+- url: http://localhost:3000
+  description: Localhost
+- url: https://staging.data.fora.health
+  description: Staging
+- url: https://demo.data.fora.health
+  description: Demo
+- url: https://data.fora.health
+  description: Production
+paths:
+  /:
+    get:
+      summary: Healthcheck
+      description: >-
+        The healthcheck API is used by Honeybadger to monitor the health and uptime
+        of the Rails app.
+
+
+        It performs a few simple checks;
+
+        1. Checks the API is up and accessible
+
+        2. Check the database is available and we can read/write to it
+
+        3. Checks that Redis is available and we can read/write to it
+
+        4. Checks there are no push notifications stuck processing
+
+
+        If all checks pass, the API returns a `200` response code, otherwise it returns
+        a `500`.
+      requestBody:
+        description: Description of the request body
+        content:
+          application/json:
+            examples:
+              Initial example:
+                value: {}
+              Example 2:
+                value: {}

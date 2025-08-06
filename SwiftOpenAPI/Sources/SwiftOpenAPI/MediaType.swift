@@ -15,10 +15,10 @@ public extension OpenAPI {
     public let schema: Referenceable<Schema>?
     
     /// Example of the media type.
-    public let example: OrderedJSONValue?
+    public var example: OrderedJSONValue?
     
     /// Examples of the media type.
-    public let examples: OrderedDictionary<String, Referenceable<Example>>?
+    public var examples: OrderedDictionary<String, Referenceable<Example>>?
     
     /// A map between a property name and its encoding information.
     public let encoding: OrderedDictionary<String, Encoding>?

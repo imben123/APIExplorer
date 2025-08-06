@@ -12,10 +12,10 @@ public extension OpenAPI {
   /// Describes a single request body.
   struct RequestBody: Model, ComponentFileSerializable {
     /// A brief description of the request body.
-    public let description: String?
+    public var description: String?
     
     /// The content of the request body.
-    public let content: OrderedDictionary<String, MediaType>
+    public var content: OrderedDictionary<String, MediaType>
     
     /// Determines if the request body is required in the request.
     public let required: Bool?

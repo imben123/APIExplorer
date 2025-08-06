@@ -142,7 +142,7 @@ private extension OpenAPI.Document {
         continue
       }
       
-      let encoder = YAMLEncoder()
+      let encoder = YAMLEncoder.default
       encoder.orderedDictionaryCodingStrategy = .keyedContainer
       let newData = try! encoder.encode(component).data(using: .utf8)!
       
@@ -186,7 +186,7 @@ private extension OpenAPI.Document {
         continue // Skip references, only handle direct values
       }
       
-      let encoder = YAMLEncoder()
+      let encoder = YAMLEncoder.default
       encoder.orderedDictionaryCodingStrategy = .keyedContainer
       let newData = try! encoder.encode(pathItem).data(using: .utf8)!
       

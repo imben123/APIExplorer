@@ -26,7 +26,7 @@ public extension OpenAPI {
     public let jsonSchemaDialect: String?
     
     /// An array of Server Objects, which provide connectivity information to a target server.
-    public let servers: [Server]?
+    public var servers: [Server]?
     
     /// The available paths and operations for the API.
     public var paths: OrderedDictionary<String, Referenceable<PathItem>>?
@@ -227,7 +227,7 @@ public extension OpenAPI {
                 var pathItem = try parseFile(PathItem.self, from: data, fileName: fileName)
                 
                 // Calculate hash for the parsed PathItem
-                let encoder = YAMLEncoder()
+                let encoder = YAMLEncoder.default
                 encoder.orderedDictionaryCodingStrategy = .keyedContainer
                 let reserializedData = try encoder.encode(pathItem).data(using: .utf8)!
                 let hash = reserializedData.calculateHash()
@@ -267,7 +267,7 @@ public extension OpenAPI {
                 case "schemas":
                   var schema = try parseFile(Schema.self, from: data, fileName: fileName)
                   // Calculate and set hash for the parsed Schema
-                  let encoder = YAMLEncoder()
+                  let encoder = YAMLEncoder.default
                   encoder.orderedDictionaryCodingStrategy = .keyedContainer
                   let reserializedData = try encoder.encode(schema).data(using: .utf8)!
                   schema.originalDataHash = reserializedData.calculateHash()
@@ -275,7 +275,7 @@ public extension OpenAPI {
                 case "responses":
                   var response = try parseFile(Response.self, from: data, fileName: fileName)
                   // Calculate and set hash for the parsed Response
-                  let encoder = YAMLEncoder()
+                  let encoder = YAMLEncoder.default
                   encoder.orderedDictionaryCodingStrategy = .keyedContainer
                   let reserializedData = try encoder.encode(response).data(using: .utf8)!
                   response.originalDataHash = reserializedData.calculateHash()
@@ -283,7 +283,7 @@ public extension OpenAPI {
                 case "parameters":
                   var parameter = try parseFile(Parameter.self, from: data, fileName: fileName)
                   // Calculate and set hash for the parsed Parameter
-                  let encoder = YAMLEncoder()
+                  let encoder = YAMLEncoder.default
                   encoder.orderedDictionaryCodingStrategy = .keyedContainer
                   let reserializedData = try encoder.encode(parameter).data(using: .utf8)!
                   parameter.originalDataHash = reserializedData.calculateHash()
@@ -291,7 +291,7 @@ public extension OpenAPI {
                 case "examples":
                   var example = try parseFile(Example.self, from: data, fileName: fileName)
                   // Calculate and set hash for the parsed Example
-                  let encoder = YAMLEncoder()
+                  let encoder = YAMLEncoder.default
                   encoder.orderedDictionaryCodingStrategy = .keyedContainer
                   let reserializedData = try encoder.encode(example).data(using: .utf8)!
                   example.originalDataHash = reserializedData.calculateHash()
@@ -299,7 +299,7 @@ public extension OpenAPI {
                 case "requestBodies":
                   var requestBody = try parseFile(RequestBody.self, from: data, fileName: fileName)
                   // Calculate and set hash for the parsed RequestBody
-                  let encoder = YAMLEncoder()
+                  let encoder = YAMLEncoder.default
                   encoder.orderedDictionaryCodingStrategy = .keyedContainer
                   let reserializedData = try encoder.encode(requestBody).data(using: .utf8)!
                   requestBody.originalDataHash = reserializedData.calculateHash()
@@ -307,7 +307,7 @@ public extension OpenAPI {
                 case "headers":
                   var header = try parseFile(Header.self, from: data, fileName: fileName)
                   // Calculate and set hash for the parsed Header
-                  let encoder = YAMLEncoder()
+                  let encoder = YAMLEncoder.default
                   encoder.orderedDictionaryCodingStrategy = .keyedContainer
                   let reserializedData = try encoder.encode(header).data(using: .utf8)!
                   header.originalDataHash = reserializedData.calculateHash()
@@ -315,7 +315,7 @@ public extension OpenAPI {
                 case "securitySchemes":
                   var securityScheme = try parseFile(SecurityScheme.self, from: data, fileName: fileName)
                   // Calculate and set hash for the parsed SecurityScheme
-                  let encoder = YAMLEncoder()
+                  let encoder = YAMLEncoder.default
                   encoder.orderedDictionaryCodingStrategy = .keyedContainer
                   let reserializedData = try encoder.encode(securityScheme).data(using: .utf8)!
                   securityScheme.originalDataHash = reserializedData.calculateHash()
@@ -323,7 +323,7 @@ public extension OpenAPI {
                 case "links":
                   var link = try parseFile(Link.self, from: data, fileName: fileName)
                   // Calculate and set hash for the parsed Link
-                  let encoder = YAMLEncoder()
+                  let encoder = YAMLEncoder.default
                   encoder.orderedDictionaryCodingStrategy = .keyedContainer
                   let reserializedData = try encoder.encode(link).data(using: .utf8)!
                   link.originalDataHash = reserializedData.calculateHash()
@@ -331,7 +331,7 @@ public extension OpenAPI {
                 case "callbacks":
                   var callback = try parseFile(Callback.self, from: data, fileName: fileName)
                   // Calculate and set hash for the parsed Callback
-                  let encoder = YAMLEncoder()
+                  let encoder = YAMLEncoder.default
                   encoder.orderedDictionaryCodingStrategy = .keyedContainer
                   let reserializedData = try encoder.encode(callback).data(using: .utf8)!
                   callback.originalDataHash = reserializedData.calculateHash()
@@ -340,7 +340,7 @@ public extension OpenAPI {
                   var pathItem = try parseFile(PathItem.self, from: data, fileName: fileName)
                   
                   // Calculate hash for the parsed PathItem
-                  let encoder = YAMLEncoder()
+                  let encoder = YAMLEncoder.default
                   encoder.orderedDictionaryCodingStrategy = .keyedContainer
                   let reserializedData = try encoder.encode(pathItem).data(using: .utf8)!
                   let hash = reserializedData.calculateHash()
@@ -463,7 +463,7 @@ public extension OpenAPI {
         encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
         return try encoder.encode(self)
       case .yaml:
-        let encoder = YAMLEncoder()
+        let encoder = YAMLEncoder.default
         encoder.orderedDictionaryCodingStrategy = .keyedContainer
         return try encoder.encode(self).data(using: .utf8)!
       }

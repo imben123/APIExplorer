@@ -12,6 +12,7 @@ struct PathGroupSection: View {
   let group: OpenAPI.Document.PathGroup
   let isExpanded: Bool
   let onToggle: () -> Void
+  let onDeleteOperation: (String, String) -> Void
   
   var body: some View {
     Group {
@@ -36,13 +37,13 @@ struct PathGroupSection: View {
         // Directory contents (if expanded)
         if isExpanded {
           ForEach(group.paths, id: \.0) { path, pathItem in
-            PathItemSection(path: path, pathItem: pathItem, isIndented: true)
+            PathItemSection(path: path, pathItem: pathItem, isIndented: true, onDeleteOperation: onDeleteOperation)
           }
         }
       } else {
         // Ungrouped paths (no subdirectory)
         ForEach(group.paths, id: \.0) { path, pathItem in
-          PathItemSection(path: path, pathItem: pathItem, isIndented: false)
+          PathItemSection(path: path, pathItem: pathItem, isIndented: false, onDeleteOperation: onDeleteOperation)
         }
       }
     }

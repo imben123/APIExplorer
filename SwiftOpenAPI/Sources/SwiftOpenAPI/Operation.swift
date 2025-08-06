@@ -15,8 +15,8 @@ public extension OpenAPI {
     public let tags: [String]?
     
     /// A short summary of what the operation does.
-    public let summary: String?
-    
+    public var summary: String?
+
     /// A verbose explanation of the operation behavior.
     public var description: String?
     
@@ -30,7 +30,7 @@ public extension OpenAPI {
     public let parameters: [Referenceable<Parameter>]?
     
     /// The request body applicable for this operation.
-    public let requestBody: Referenceable<RequestBody>?
+    public var requestBody: Referenceable<RequestBody>?
     
     /// The list of possible responses as they are returned from executing this operation.
     public let responses: Responses?

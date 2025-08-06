@@ -13,6 +13,7 @@ struct OperationRow: View {
   let path: String
   let operation: OpenAPI.Operation
   let isIndented: Bool
+  let onDelete: (String, String) -> Void
   
   private var methodColor: Color {
     switch method {
@@ -46,5 +47,10 @@ struct OperationRow: View {
     .padding(.leading, isIndented ? 8 : 0)
     .padding(.vertical, 3)
     .tag("\(path)|\(method.rawValue)")
+    .contextMenu {
+      Button("Delete Operation", role: .destructive) {
+        onDelete(path, method.rawValue)
+      }
+    }
   }
 }

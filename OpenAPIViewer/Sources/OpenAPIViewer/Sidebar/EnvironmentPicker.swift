@@ -14,7 +14,14 @@ struct EnvironmentPicker: View {
   let servers: [OpenAPI.Server]
   @Binding var selectedServerURL: String
   @Binding var serverVariableValues: OrderedDictionary<String, String>
-  @State private var isExpanded: Bool = true
+  let onAddServer: (String, String) -> Void
+  let onDeleteServer: (String) -> Void
+  @State private var isExpanded: Bool = false
+  @State private var showingNewEnvironmentSheet: Bool = false
+  @State private var showingDeleteConfirmation: Bool = false
+  @State private var serverToDelete: OpenAPI.Server?
+  
+  @Environment(\.editMode) private var editMode
   
   private var selectedServer: OpenAPI.Server? {
     servers.first(where: { $0.url == selectedServerURL })
@@ -24,7 +31,7 @@ struct EnvironmentPicker: View {
     VStack(alignment: .leading, spacing: 8) {
       DisclosureGroup(isExpanded: $isExpanded) {
         VStack(alignment: .leading, spacing: 12) {
-          // Server picker
+          // Server picker or empty state
           if !servers.isEmpty {
             HStack {
               Picker("Environment", selection: $selectedServerURL) {
@@ -32,9 +39,36 @@ struct EnvironmentPicker: View {
                   Text(servers[index].description ?? servers[index].url)
                     .tag(servers[index].url)
                 }
+                
+                if editMode {
+                  Divider()
+                  Button("Create New Environment...") {
+                    showingNewEnvironmentSheet = true
+                  }
+                  .tag("__create_new__")
+                }
               }
               .pickerStyle(.menu)
               .labelsHidden()
+              .onChange(of: selectedServerURL) { oldValue, newValue in
+                if newValue == "__create_new__" {
+                  selectedServerURL = oldValue
+                  showingNewEnvironmentSheet = true
+                }
+              }
+              
+              if editMode && servers.count > 1 && selectedServer != nil {
+                Button(action: {
+                  serverToDelete = selectedServer
+                  showingDeleteConfirmation = true
+                }) {
+                  Image(systemName: "trash")
+                    .foregroundColor(.red)
+                }
+                .buttonStyle(.plain)
+                .help("Delete selected environment")
+              }
+              
               Spacer()
             }
             
@@ -68,9 +102,20 @@ struct EnvironmentPicker: View {
               }
             }
           } else {
-            Text("No servers defined")
-              .font(.caption)
-              .foregroundColor(.secondary)
+            VStack(alignment: .leading, spacing: 8) {
+              Text("No servers defined")
+                .font(.caption)
+                .foregroundColor(.secondary)
+
+              if editMode {
+                Button("Create New Environment") {
+                  showingNewEnvironmentSheet = true
+                }
+                .buttonStyle(.borderedProminent)
+                .controlSize(.small)
+              }
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
           }
         }
         .padding(.top, 4)
@@ -89,6 +134,32 @@ struct EnvironmentPicker: View {
     }
     .padding(.horizontal)
     .padding(.vertical, 8)
+    .sheet(isPresented: $showingNewEnvironmentSheet) {
+      NewEnvironmentSheet(
+        isPresented: $showingNewEnvironmentSheet,
+        onSave: { url, name in
+          onAddServer(url, name)
+          selectedServerURL = url
+        }
+      )
+    }
+    .confirmationDialog(
+      "Delete Environment",
+      isPresented: $showingDeleteConfirmation,
+      titleVisibility: .visible,
+      presenting: serverToDelete
+    ) { server in
+      Button("Delete", role: .destructive) {
+        // Select a different server before deleting
+        if let firstOtherServer = servers.first(where: { $0.url != server.url }) {
+          selectedServerURL = firstOtherServer.url
+        }
+        onDeleteServer(server.url)
+      }
+      Button("Cancel", role: .cancel) {}
+    } message: { server in
+      Text("Are you sure you want to delete \"\(server.description ?? server.url)\"? This cannot be undone.")
+    }
     .onAppear {
       if let server = servers.first {
         selectedServerURL = server.url
@@ -174,7 +245,13 @@ struct ServerVariableEditor: View {
         )
       ],
       selectedServerURL: .constant("https://dev.example.com"),
-      serverVariableValues: .constant([:])
+      serverVariableValues: .constant([:]),
+      onAddServer: { url, name in
+        print("Add server: \(name) - \(url)")
+      },
+      onDeleteServer: { url in
+        print("Delete server: \(url)")
+      }
     )
     .frame(width: 300)
     

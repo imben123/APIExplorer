@@ -85,5 +85,32 @@ public extension OpenAPI {
     private enum CodingKeys: String, CodingKey {
       case summary, description, get, put, post, delete, options, head, patch, trace, servers, parameters
     }
+
+    public subscript(method method: HTTPMethod) -> Operation {
+      get {
+        switch method {
+        case .get: return get!
+        case .post: return post!
+        case .put: return put!
+        case .delete: return delete!
+        case .patch: return patch!
+        case .head: return head!
+        case .options: return options!
+        case .trace: return trace!
+        }
+      }
+      set {
+        switch method {
+        case .get: get = newValue
+        case .post: post = newValue
+        case .put: put = newValue
+        case .delete: delete = newValue
+        case .patch: patch = newValue
+        case .head: head = newValue
+        case .options: options = newValue
+        case .trace: trace = newValue
+        }
+      }
+    }
   }
 }

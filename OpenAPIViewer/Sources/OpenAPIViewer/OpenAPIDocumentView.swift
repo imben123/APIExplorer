@@ -32,7 +32,7 @@ public struct OpenAPIDocumentView: View {
     NavigationSplitView(sidebar: {
       // Left sidebar
       Sidebar(
-        document: document,
+        document: $document,
         selectedPath: $selectedPath,
         selectedOperation: $selectedOperation,
         selectedServer: $selectedServer,
