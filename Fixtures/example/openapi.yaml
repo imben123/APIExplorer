@@ -33,12 +33,3 @@ paths:
 
         If all checks pass, the API returns a `200` response code, otherwise it returns
         a `500`.
-      requestBody:
-        description: Description of the request body
-        content:
-          application/json:
-            examples:
-              Initial example:
-                value: {}
-              Example 2:
-                value: {}

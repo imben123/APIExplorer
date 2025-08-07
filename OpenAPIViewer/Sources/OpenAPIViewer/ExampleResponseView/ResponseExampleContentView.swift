@@ -19,7 +19,7 @@ struct ResponseExampleContentView: View {
         VStack(alignment: .leading, spacing: 8) {
           // Show single example if available
           if let example = mediaType.example {
-            JSONView(json: example)
+            JSONView(json: .object(example))
               .padding(12)
           }
           // Show named examples if available

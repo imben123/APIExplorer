@@ -17,7 +17,7 @@ public extension OpenAPI {
     public let description: String?
     
     /// Embedded literal example.
-    public let value: OrderedJSONObject?
+    public var value: OrderedJSONObject?
     
     /// A URI that points to the literal example.
     public let externalValue: String?

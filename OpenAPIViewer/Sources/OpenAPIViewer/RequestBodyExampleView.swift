@@ -16,53 +16,53 @@ struct RequestBodyExampleView: View {
   @Binding var document: OpenAPI.Document
   let path: String
   let operation: HTTPMethod
-  
+
   @Environment(\.editMode) private var isEditMode
-  
+
   private func deleteRequestBody() {
     document[path: path][method: operation].requestBody = nil
   }
-  
+
   private func addDescription() {
     if case .value(var requestBodyValue) = document[path: path][method: operation].requestBody {
       requestBodyValue.description = "Request body description"
       document[path: path][method: operation].requestBody = .value(requestBodyValue)
     }
   }
-  
+
   private var defaultContentTypes: [String] {
     ["application/json", "application/xml", "text/plain", "text/html", "multipart/form-data", "application/x-www-form-urlencoded"]
   }
-  
+
   private func getNextContentType() -> String? {
     guard case .value(let requestBodyValue) = document[path: path][method: operation].requestBody else {
       return "application/json"
     }
-    
+
     // First try application/json
     if !requestBodyValue.content.keys.contains("application/json") {
       return "application/json"
     }
-    
+
     // Then try other default content types
     for contentType in defaultContentTypes {
       if !requestBodyValue.content.keys.contains(contentType) {
         return contentType
       }
     }
-    
+
     // If all defaults exist, try empty string
     if !requestBodyValue.content.keys.contains("") {
       return ""
     }
-    
+
     // All possible content types exist
     return nil
   }
-  
+
   private func addContent() {
     guard let contentType = getNextContentType() else { return }
-    
+
     if case .value(var requestBodyValue) = document[path: path][method: operation].requestBody {
       var newContent = requestBodyValue.content
       newContent[contentType] = OpenAPI.MediaType()
@@ -70,13 +70,13 @@ struct RequestBodyExampleView: View {
       document[path: path][method: operation].requestBody = .value(requestBodyValue)
     }
   }
-  
+
   private func renameContentType(from oldKey: String, to newKey: String) {
     guard oldKey != newKey else { return }
-    
+
     if case .value(var requestBodyValue) = document[path: path][method: operation].requestBody {
       var newContent = OrderedDictionary<String, OpenAPI.MediaType>()
-      
+
       // Preserve order while renaming
       for (key, value) in requestBodyValue.content {
         if key == oldKey {
@@ -85,28 +85,28 @@ struct RequestBodyExampleView: View {
           newContent[key] = value
         }
       }
-      
+
       requestBodyValue.content = newContent
       document[path: path][method: operation].requestBody = .value(requestBodyValue)
     }
   }
-  
+
   private func deleteContentType(_ contentType: String) {
     if case .value(var requestBodyValue) = document[path: path][method: operation].requestBody {
       requestBodyValue.content.removeValue(forKey: contentType)
       document[path: path][method: operation].requestBody = .value(requestBodyValue)
     }
   }
-  
+
   private func renameExample(in contentType: String, from oldKey: String, to newKey: String) {
     guard oldKey != newKey else { return }
-    
+
     if case .value(var requestBodyValue) = document[path: path][method: operation].requestBody,
        var mediaType = requestBodyValue.content[contentType],
        var examples = mediaType.examples {
-      
+
       var newExamples = OrderedDictionary<String, OpenAPI.Referenceable<OpenAPI.Example>>()
-      
+
       // Preserve order while renaming
       for (key, value) in examples {
         if key == oldKey {
@@ -115,40 +115,58 @@ struct RequestBodyExampleView: View {
           newExamples[key] = value
         }
       }
-      
+
       mediaType.examples = newExamples
       requestBodyValue.content[contentType] = mediaType
       document[path: path][method: operation].requestBody = .value(requestBodyValue)
     }
   }
-  
+
+  private func updateSingleExample(_ contentType: String, example: OrderedJSONObject) {
+    if case .value(var requestBodyValue) = document[path: path][method: operation].requestBody,
+       var mediaType = requestBodyValue.content[contentType] {
+      mediaType.example = example
+      requestBodyValue.content[contentType] = mediaType
+      document[path: path][method: operation].requestBody = .value(requestBodyValue)
+    }
+  }
+
+  private func updateNamedExample(_ contentType: String, exampleKey: String, value: OrderedJSONObject) {
+    if case .value(var requestBodyValue) = document[path: path][method: operation].requestBody,
+       var mediaType = requestBodyValue.content[contentType],
+       var examples = mediaType.examples {
+
+      if let existingExample = examples[exampleKey] {
+        switch existingExample {
+        case .value(var example):
+          example.value = value
+          examples[exampleKey] = .value(example)
+        case .reference:
+          // Don't modify references
+          break
+        }
+      }
+
+      mediaType.examples = examples
+      requestBodyValue.content[contentType] = mediaType
+      document[path: path][method: operation].requestBody = .value(requestBodyValue)
+    }
+  }
+
   private func addExampleToMediaType(_ contentType: String) {
     if case .value(var requestBodyValue) = document[path: path][method: operation].requestBody,
        var mediaType = requestBodyValue.content[contentType] {
-      
+
       if mediaType.example == nil && mediaType.examples == nil {
         // No examples yet, add a single example
-        mediaType.example = .object([:])
+        mediaType.example = [:]
       } else if mediaType.example != nil && mediaType.examples == nil {
         // Has single example, convert to examples
         let existingExample = mediaType.example
         mediaType.example = nil
-        
+
         var examples = OrderedDictionary<String, OpenAPI.Referenceable<OpenAPI.Example>>()
-        // Convert existing example to OrderedJSONObject
-        let existingValue: OrderedJSONObject?
-        if let existingExample = existingExample {
-          switch existingExample {
-          case .object(let obj):
-            existingValue = obj
-          default:
-            existingValue = ["value": existingExample]
-          }
-        } else {
-          existingValue = nil
-        }
-        
-        examples["Example 1"] = .value(OpenAPI.Example(value: existingValue))
+        examples["Example 1"] = .value(OpenAPI.Example(value: existingExample))
         examples["Example 2"] = .value(OpenAPI.Example(value: [:]))
         mediaType.examples = examples
       } else if let existingExamples = mediaType.examples {
@@ -158,12 +176,12 @@ struct RequestBodyExampleView: View {
         examples["Example \(nextIndex)"] = .value(OpenAPI.Example(value: [:]))
         mediaType.examples = examples
       }
-      
+
       requestBodyValue.content[contentType] = mediaType
       document[path: path][method: operation].requestBody = .value(requestBodyValue)
     }
   }
-  
+
   private var requestBodyDescriptionBinding: Binding<String> {
     Binding(
       get: {
@@ -180,16 +198,16 @@ struct RequestBodyExampleView: View {
       }
     )
   }
-  
+
   var body: some View {
     VStack(alignment: .leading, spacing: 8) {
       HStack {
         Text("Request Body Examples")
           .font(.headline)
-        
+
         if isEditMode {
           Spacer()
-          
+
           Button(action: {
             deleteRequestBody()
           }) {
@@ -199,7 +217,7 @@ struct RequestBodyExampleView: View {
           .buttonStyle(.plain)
         }
       }
-      
+
       // Description section
       if requestBody.description != nil || isEditMode {
         if requestBody.description != nil {
@@ -214,7 +232,7 @@ struct RequestBodyExampleView: View {
           .buttonStyle(.plain)
         }
       }
-      
+
       if requestBody.required == true {
         Text("Required")
           .font(.caption)
@@ -224,7 +242,7 @@ struct RequestBodyExampleView: View {
           .background(Color.orange.opacity(0.2))
           .cornerRadius(4)
       }
-      
+
       ForEach(Array(requestBody.content.keys.sorted()), id: \.self) { mediaTypeName in
         if let mediaType = requestBody.content[mediaTypeName] {
           VStack(alignment: .leading, spacing: 4) {
@@ -236,9 +254,9 @@ struct RequestBodyExampleView: View {
                     renameContentType(from: mediaTypeName, to: newName)
                   }
                 )
-                
+
                 Spacer()
-                
+
                 Button(action: {
                   deleteContentType(mediaTypeName)
                 }) {
@@ -253,7 +271,7 @@ struct RequestBodyExampleView: View {
                   .foregroundColor(.secondary)
               }
             }
-            
+
             RequestBodyExampleContentView(
               mediaType: mediaType,
               document: document,
@@ -263,12 +281,18 @@ struct RequestBodyExampleView: View {
               },
               onRenameExample: { oldKey, newKey in
                 renameExample(in: mediaTypeName, from: oldKey, to: newKey)
+              },
+              onUpdateSingleExample: { example in
+                updateSingleExample(mediaTypeName, example: example)
+              },
+              onUpdateNamedExample: { exampleKey, value in
+                updateNamedExample(mediaTypeName, exampleKey: exampleKey, value: value)
               }
             )
           }
         }
       }
-      
+
       // Add Content button in edit mode
       if isEditMode {
         Button(action: addContent) {
@@ -285,12 +309,12 @@ struct RequestBodyExampleView: View {
 struct ExampleNameField: View {
   @State private var editingName: String
   let onRename: (String) -> Void
-  
+
   init(exampleName: String, onRename: @escaping (String) -> Void) {
     self._editingName = State(initialValue: exampleName)
     self.onRename = onRename
   }
-  
+
   var body: some View {
     TextField("Example Name", text: $editingName)
       .font(.caption.bold())
@@ -305,12 +329,12 @@ struct ExampleNameField: View {
 struct MediaTypeNameField: View {
   @State private var editingName: String
   let onRename: (String) -> Void
-  
+
   init(mediaTypeName: String, onRename: @escaping (String) -> Void) {
     self._editingName = State(initialValue: mediaTypeName)
     self.onRename = onRename
   }
-  
+
   var body: some View {
     TextField("Content Type", text: $editingName)
       .font(.caption.monospaced())
@@ -331,75 +355,83 @@ struct RequestBodyExampleContentView: View {
   let contentType: String
   let onAddExample: () -> Void
   let onRenameExample: (String, String) -> Void
-  
+  let onUpdateSingleExample: (OrderedJSONObject) -> Void
+  let onUpdateNamedExample: (String, OrderedJSONObject) -> Void
+
   @Environment(\.editMode) private var isEditMode
-  
+
   var body: some View {
-    ScrollView([.horizontal]) {
-      HStack {
-        VStack(alignment: .leading, spacing: 8) {
-          // Add example button in edit mode
-          if isEditMode {
-            Button(action: onAddExample) {
-              Label("Add Example", systemImage: "plus.circle")
-                .foregroundColor(.accentColor)
-                .font(.caption)
-            }
-            .buttonStyle(.plain)
-            .padding(.vertical, 8)
-            .padding(.horizontal, 12)
-          }
-          
-          // Show single example if available
-          if let example = mediaType.example {
-            JSONView(json: example)
-              .padding(12)
-          }
-          // Show named examples if available
-          else if let examples = mediaType.examples, !examples.isEmpty {
-            ForEach(Array(examples.keys.sorted()), id: \.self) { exampleKey in
-              if let exampleRef = examples[exampleKey],
-                 let example = exampleRef.resolve(in: document),
-                 let value = example.value {
-                VStack(alignment: .leading, spacing: 4) {
-                  if isEditMode {
-                    ExampleNameField(
-                      exampleName: exampleKey,
-                      onRename: { newName in
-                        onRenameExample(exampleKey, newName)
-                      }
-                    )
-                  } else if let summary = example.summary {
-                    Text(summary)
-                      .font(.caption.bold())
-                      .foregroundColor(.primary)
-                  } else {
-                    Text(exampleKey)
-                      .font(.caption.bold())
-                      .foregroundColor(.primary)
-                  }
-                  JSONView(json: .object(value))
-                    .padding(12)
-                }
-                .padding(12)
-              }
-            }
-          }
-          // Fallback when no examples
-          else {
-            Text("No examples available")
+    HStack {
+      VStack(alignment: .leading, spacing: 8) {
+        // Add example button in edit mode
+        if isEditMode {
+          Button(action: onAddExample) {
+            Label("Add Example", systemImage: "plus.circle")
+              .foregroundColor(.accentColor)
               .font(.caption)
-              .foregroundColor(.secondary)
+          }
+          .buttonStyle(.plain)
+          .padding(.vertical, 8)
+          .padding(.horizontal, 12)
+        }
+
+        // Show single example if available
+        if let example = mediaType.example {
+          EditableJSONObjectView(json: Binding(
+            get: { example },
+            set: { newValue in
+              onUpdateSingleExample(newValue)
+            }
+          ))
+          .padding(12)
+        }
+        // Show named examples if available
+        else if let examples = mediaType.examples, !examples.isEmpty {
+          ForEach(Array(examples.keys.sorted()), id: \.self) { exampleKey in
+            if let exampleRef = examples[exampleKey],
+               let example = exampleRef.resolve(in: document),
+               let value = example.value {
+              VStack(alignment: .leading, spacing: 4) {
+                if isEditMode {
+                  ExampleNameField(
+                    exampleName: exampleKey,
+                    onRename: { newName in
+                      onRenameExample(exampleKey, newName)
+                    }
+                  )
+                } else if let summary = example.summary {
+                  Text(summary)
+                    .font(.caption.bold())
+                    .foregroundColor(.primary)
+                } else {
+                  Text(exampleKey)
+                    .font(.caption.bold())
+                    .foregroundColor(.primary)
+                }
+                EditableJSONObjectView(json: Binding(
+                  get: { value },
+                  set: { newValue in
+                    onUpdateNamedExample(exampleKey, newValue)
+                  }
+                ))
+              }
               .padding(12)
+            }
           }
         }
-        Spacer(minLength: 0)
+        // Fallback when no examples
+        else {
+          Text("No examples available")
+            .font(.caption)
+            .foregroundColor(.secondary)
+            .padding(12)
+        }
       }
     }
+    .frame(maxWidth: .infinity, alignment: .leading)
     .background(
       RoundedRectangle(cornerRadius: 8)
         .fill(.secondary.opacity(0.1))
     )
-    .frame(maxWidth: .infinity)
   }
 }
