@@ -13,23 +13,4 @@ servers:
   description: Production
 paths:
   /:
-    get:
-      summary: Healthcheck
-      description: >-
-        The healthcheck API is used by Honeybadger to monitor the health and uptime
-        of the Rails app.
-
-
-        It performs a few simple checks;
-
-        1. Checks the API is up and accessible
-
-        2. Check the database is available and we can read/write to it
-
-        3. Checks that Redis is available and we can read/write to it
-
-        4. Checks there are no push notifications stuck processing
-
-
-        If all checks pass, the API returns a `200` response code, otherwise it returns
-        a `500`.
+    $ref: ./paths/healthcheck.yaml

@@ -35,7 +35,7 @@ public extension OpenAPI {
     public let webhooks: OrderedDictionary<String, Referenceable<PathItem>>?
 
     /// An element to hold various schemas for the document.
-    public let components: Components?
+    public var components: Components?
     
     /// A declaration of which security mechanisms can be used across the API.
     public let security: [SecurityRequirement]?
@@ -75,15 +75,35 @@ public extension OpenAPI {
 
     public subscript(path ref: String) -> PathItem {
       get {
-        paths![ref]!.resolve(in: self)!
+        guard let result = paths?[ref]?.resolve(in: self) else {
+          return PathItem()
+        }
+        return result
       }
       set {
         if let ref = paths![ref]!.ref {
           let normalizedRef = ref.hasPrefix("./") ? String(ref.dropFirst(2)) : ref
           componentFiles!.pathItems![normalizedRef]!.value = newValue
         } else {
-          paths![ref]!.value = newValue
+          if paths == nil {
+            paths = [:]
+          }
+          paths?[ref] = .value(newValue)
         }
+      }
+    }
+
+    public subscript(requestBody args: OperationReference) -> RequestBody {
+      get {
+        guard let result = self[path: args.path][method: args.method].requestBody?.resolve(in: self) else {
+          return .init(content: [:])
+        }
+        return result
+      }
+      set {
+        var ref = self[path: args.path][method: args.method].requestBody ?? .value(newValue)
+        ref.update(in: &self, newValue: newValue)
+        self[path: args.path][method: args.method].requestBody = ref
       }
     }
 

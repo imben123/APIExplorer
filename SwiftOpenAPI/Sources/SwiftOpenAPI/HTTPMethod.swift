@@ -6,8 +6,9 @@
 //
 
 import Foundation
+import SwiftToolbox
 
-public enum HTTPMethod: String, CaseIterable, Codable {
+public enum HTTPMethod: String, CaseIterable, Model {
   case get = "GET"
   case post = "POST"
   case put = "PUT"
@@ -16,17 +17,4 @@ public enum HTTPMethod: String, CaseIterable, Codable {
   case head = "HEAD"
   case options = "OPTIONS"
   case trace = "TRACE"
-  
-  public var rawValue: String {
-    switch self {
-    case .get: return "GET"
-    case .post: return "POST"
-    case .put: return "PUT"
-    case .delete: return "DELETE"
-    case .patch: return "PATCH"
-    case .head: return "HEAD"
-    case .options: return "OPTIONS"
-    case .trace: return "TRACE"
-    }
-  }
 }

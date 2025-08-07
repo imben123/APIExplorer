@@ -39,7 +39,7 @@ public extension OpenAPI {
         }
       }
     }
-    
+
     /// Resolves this referenceable to its concrete instance by looking it up in the document.
     /// - Parameter document: The OpenAPI document to resolve references against
     /// - Returns: The concrete instance, or nil if the reference cannot be resolved
@@ -53,56 +53,61 @@ public extension OpenAPI {
           // Handle external references or other formats
           return resolveExternalReference(ref, in: document)
         }
-        
+
         let pathComponents = ref.dropFirst("#/components/".count).split(separator: "/")
         guard pathComponents.count == 2 else { return nil }
-        
+
         let componentType = String(pathComponents[0])
         let componentName = String(pathComponents[1])
-        
-        return resolveComponent(type: componentType, name: componentName, in: document)
+
+        return document.components?.resolveComponent(
+          type: componentType,
+          name: componentName,
+          in: document
+        )
       }
     }
-    
-    /// Resolves a component reference from the document's components
-    private func resolveComponent(type: String, name: String, in document: Document) -> T? {
-      guard let components = document.components else { return nil }
-      
-      // Use type erasure to handle different component types
-      switch type {
-      case "schemas":
-        return components.schemas?[name]?.resolve(in: document) as? T
-      case "responses":
-        return components.responses?[name]?.resolve(in: document) as? T
-      case "parameters":
-        return components.parameters?[name]?.resolve(in: document) as? T
-      case "examples":
-        return components.examples?[name]?.resolve(in: document) as? T
-      case "requestBodies":
-        return components.requestBodies?[name]?.resolve(in: document) as? T
-      case "headers":
-        return components.headers?[name]?.resolve(in: document) as? T
-      case "securitySchemes":
-        return components.securitySchemes?[name]?.resolve(in: document) as? T
-      case "links":
-        return components.links?[name]?.resolve(in: document) as? T
-      case "callbacks":
-        return components.callbacks?[name]?.resolve(in: document) as? T
-      case "pathItems":
-        return components.pathItems?[name]?.resolve(in: document) as? T
-      default:
-        return nil
+
+    /// Resolves this referenceable to its concrete instance by looking it up in the document.
+    /// - Parameter document: The OpenAPI document to resolve references against
+    /// - Returns: The concrete instance, or nil if the reference cannot be resolved
+    public mutating func update(in document: inout Document, newValue: T) {
+      switch self {
+      case .value:
+        self.value = newValue
+      case .reference(let ref):
+        // Parse the reference path (e.g., "#/components/schemas/Pet")
+        guard ref.hasPrefix("#/components/") else {
+          // Handle external references or other formats
+          document.componentFiles?.updateReference(
+            ref,
+            newValue: newValue,
+            useFullReferenceString: true
+          )
+          return
+        }
+
+        let pathComponents = ref.dropFirst("#/components/".count).split(separator: "/")
+        guard pathComponents.count == 2 else { return }
+
+        let componentType = String(pathComponents[0])
+        let componentName = String(pathComponents[1])
+
+        document.components?.updateReference(
+          "\(componentType)/\(componentName)",
+          newValue: newValue
+        )
       }
     }
-    
+
     /// Resolves external references (files, URLs, etc.)
     private func resolveExternalReference(_ ref: String, in document: Document) -> T? {
       // Check if it's a file reference that we have in componentFiles
       guard let componentFiles = document.componentFiles else { return nil }
-      
+
       // Normalize the reference path by removing leading "./" since our dicts don't have this prefix
       let normalizedRef = ref.hasPrefix("./") ? String(ref.dropFirst(2)) : ref
-      
+
       // Handle different component types from external files
       if let schemas = componentFiles.schemas, let schema = schemas[normalizedRef]?.resolve(in: document) as? T {
         return schema
@@ -134,10 +139,45 @@ public extension OpenAPI {
       if let pathItems = componentFiles.pathItems, let pathItem = pathItems[normalizedRef]?.resolve(in: document) as? T {
         return pathItem
       }
-      
+
       return nil
     }
-    
+
+    /// Resolves external references (files, URLs, etc.)
+    private func updateExternalReference(_ ref: String, newValue: Any?, in document: inout Document) {
+      // Normalize the reference path by removing leading "./" since our dicts don't have this prefix
+      let normalizedRef = ref.hasPrefix("./") ? String(ref.dropFirst(2)) : ref
+
+      let pathComponents = normalizedRef.split(separator: "/")
+      let componentType = String(pathComponents[0])
+
+      // Use type erasure to handle different component types
+      switch componentType {
+      case "schemas":
+        document.componentFiles!.schemas?[normalizedRef]!.value = newValue as! Schema?
+      case "responses":
+        document.componentFiles!.responses?[normalizedRef]!.value = newValue as! Response?
+      case "parameters":
+        document.componentFiles!.parameters?[normalizedRef]!.value = newValue as! Parameter?
+      case "examples":
+        document.componentFiles!.examples?[normalizedRef]!.value = newValue as! Example?
+      case "requestBodies":
+        document.componentFiles!.requestBodies?[normalizedRef]!.value = newValue as! RequestBody?
+      case "headers":
+        document.componentFiles!.headers?[normalizedRef]!.value = newValue as! Header?
+      case "securitySchemes":
+        document.componentFiles!.securitySchemes?[normalizedRef]!.value = newValue as! SecurityScheme?
+      case "links":
+        document.componentFiles!.links?[normalizedRef]!.value = newValue as! Link?
+      case "callbacks":
+        document.componentFiles!.callbacks?[normalizedRef]!.value = newValue as! Callback?
+      case "pathItems":
+        document.componentFiles!.pathItems?[normalizedRef]!.value = newValue as! PathItem?
+      default:
+        fatalError()
+      }
+    }
+
     public init(from decoder: Decoder) throws {
       let container = try decoder.container(keyedBy: CodingKeys.self)
       if let ref = try container.decodeIfPresent(String.self, forKey: .ref) {

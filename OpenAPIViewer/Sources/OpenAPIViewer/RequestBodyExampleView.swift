@@ -12,22 +12,138 @@ import Collections
 import RichTextView
 
 struct RequestBodyExampleView: View {
-  let requestBody: OpenAPI.RequestBody
+  var requestBody: OpenAPI.RequestBody
   @Binding var document: OpenAPI.Document
   let path: String
   let operation: HTTPMethod
 
   @Environment(\.editMode) private var isEditMode
 
+  private var requestBodyBinding: Binding<OpenAPI.RequestBody> {
+    $document[requestBody: OperationReference(path: path, method: operation)]
+  }
+
+  var body: some View {
+    VStack(alignment: .leading, spacing: 8) {
+      HStack {
+        Text("Request Body Examples")
+          .font(.headline)
+
+        if isEditMode {
+          Spacer()
+
+          Button(action: {
+            deleteRequestBody()
+          }) {
+            Label("Delete", systemImage: "trash")
+              .foregroundColor(.red)
+          }
+          .buttonStyle(.plain)
+        }
+      }
+
+      // Description section
+      if requestBody.description != nil || isEditMode {
+        if requestBody.description != nil {
+          MarkdownTextView(markdown: $document[requestBody: OperationReference(path: path, method: operation)].description.defaultingToEmptyString, editable: isEditMode)
+            .font(.body)
+            .foregroundColor(.secondary)
+        } else if isEditMode {
+          Button(action: addDescription) {
+            Label("Add Description", systemImage: "plus.circle")
+              .foregroundColor(.accentColor)
+          }
+          .buttonStyle(.plain)
+        }
+      }
+
+      // Required checkbox in edit mode
+      if isEditMode {
+        HStack {
+          Toggle(isOn: Binding(
+            get: {
+              if case .value(let requestBodyValue) = document[path: path][method: operation].requestBody {
+                return requestBodyValue.required == true
+              }
+              return false
+            },
+            set: { newValue in
+              if case .value(var requestBodyValue) = document[path: path][method: operation].requestBody {
+                requestBodyValue.required = newValue ? true : nil
+                document[path: path][method: operation].requestBody = .value(requestBodyValue)
+              }
+            }
+          )) {
+            Text("Required")
+              .font(.caption)
+          }
+          .toggleStyle(.checkbox)
+        }
+      } else if requestBody.required == true {
+        Text("Required")
+          .font(.caption)
+          .foregroundColor(.orange)
+          .padding(.horizontal, 8)
+          .padding(.vertical, 2)
+          .background(Color.orange.opacity(0.2))
+          .cornerRadius(4)
+      }
+
+      ForEach(requestBody.content.keys.sorted(), id: \.self) { mediaTypeName in
+        VStack(alignment: .leading, spacing: 4) {
+          HStack {
+            if isEditMode {
+              MediaTypeNameField(
+                mediaTypeName: mediaTypeName,
+                onRename: { newName in
+                  renameContentType(from: mediaTypeName, to: newName)
+                }
+              )
+
+              Spacer()
+
+              Button(action: {
+                deleteContentType(mediaTypeName)
+              }) {
+                Image(systemName: "trash")
+                  .foregroundColor(.red)
+                  .font(.caption)
+              }
+              .buttonStyle(.plain)
+            } else {
+              Text(mediaTypeName)
+                .font(.caption.monospaced())
+                .foregroundColor(.secondary)
+            }
+          }
+
+          RequestBodyExampleContentView(
+            mediaType: requestBodyBinding.content[mediaTypeName],
+            document: document,
+            contentType: mediaTypeName
+          )
+        }
+      }
+
+      // Add Content button in edit mode
+      if isEditMode {
+        Button(action: addContent) {
+          Label("Add Content Type", systemImage: "plus.circle")
+            .foregroundColor(.accentColor)
+        }
+        .buttonStyle(.plain)
+        .disabled(getNextContentType() == nil)
+      }
+    }
+  }
+
   private func deleteRequestBody() {
     document[path: path][method: operation].requestBody = nil
   }
 
   private func addDescription() {
-    if case .value(var requestBodyValue) = document[path: path][method: operation].requestBody {
-      requestBodyValue.description = "Request body description"
-      document[path: path][method: operation].requestBody = .value(requestBodyValue)
-    }
+    let ref = OperationReference(path: path, method: operation)
+    document[requestBody: ref].description = "Request body description"
   }
 
   private var defaultContentTypes: [String] {
@@ -62,13 +178,8 @@ struct RequestBodyExampleView: View {
 
   private func addContent() {
     guard let contentType = getNextContentType() else { return }
-
-    if case .value(var requestBodyValue) = document[path: path][method: operation].requestBody {
-      var newContent = requestBodyValue.content
-      newContent[contentType] = OpenAPI.MediaType()
-      requestBodyValue.content = newContent
-      document[path: path][method: operation].requestBody = .value(requestBodyValue)
-    }
+    let ref = OperationReference(path: path, method: operation)
+    document[requestBody: ref].content[contentType] = OpenAPI.MediaType()
   }
 
   private func renameContentType(from oldKey: String, to newKey: String) {
@@ -92,217 +203,7 @@ struct RequestBodyExampleView: View {
   }
 
   private func deleteContentType(_ contentType: String) {
-    if case .value(var requestBodyValue) = document[path: path][method: operation].requestBody {
-      requestBodyValue.content.removeValue(forKey: contentType)
-      document[path: path][method: operation].requestBody = .value(requestBodyValue)
-    }
-  }
-
-  private func renameExample(in contentType: String, from oldKey: String, to newKey: String) {
-    guard oldKey != newKey else { return }
-
-    if case .value(var requestBodyValue) = document[path: path][method: operation].requestBody,
-       var mediaType = requestBodyValue.content[contentType],
-       var examples = mediaType.examples {
-
-      var newExamples = OrderedDictionary<String, OpenAPI.Referenceable<OpenAPI.Example>>()
-
-      // Preserve order while renaming
-      for (key, value) in examples {
-        if key == oldKey {
-          newExamples[newKey] = value
-        } else {
-          newExamples[key] = value
-        }
-      }
-
-      mediaType.examples = newExamples
-      requestBodyValue.content[contentType] = mediaType
-      document[path: path][method: operation].requestBody = .value(requestBodyValue)
-    }
-  }
-
-  private func updateSingleExample(_ contentType: String, example: OrderedJSONObject) {
-    if case .value(var requestBodyValue) = document[path: path][method: operation].requestBody,
-       var mediaType = requestBodyValue.content[contentType] {
-      mediaType.example = example
-      requestBodyValue.content[contentType] = mediaType
-      document[path: path][method: operation].requestBody = .value(requestBodyValue)
-    }
-  }
-
-  private func updateNamedExample(_ contentType: String, exampleKey: String, value: OrderedJSONObject) {
-    if case .value(var requestBodyValue) = document[path: path][method: operation].requestBody,
-       var mediaType = requestBodyValue.content[contentType],
-       var examples = mediaType.examples {
-
-      if let existingExample = examples[exampleKey] {
-        switch existingExample {
-        case .value(var example):
-          example.value = value
-          examples[exampleKey] = .value(example)
-        case .reference:
-          // Don't modify references
-          break
-        }
-      }
-
-      mediaType.examples = examples
-      requestBodyValue.content[contentType] = mediaType
-      document[path: path][method: operation].requestBody = .value(requestBodyValue)
-    }
-  }
-
-  private func addExampleToMediaType(_ contentType: String) {
-    if case .value(var requestBodyValue) = document[path: path][method: operation].requestBody,
-       var mediaType = requestBodyValue.content[contentType] {
-
-      if mediaType.example == nil && mediaType.examples == nil {
-        // No examples yet, add a single example
-        mediaType.example = [:]
-      } else if mediaType.example != nil && mediaType.examples == nil {
-        // Has single example, convert to examples
-        let existingExample = mediaType.example
-        mediaType.example = nil
-
-        var examples = OrderedDictionary<String, OpenAPI.Referenceable<OpenAPI.Example>>()
-        examples["Example 1"] = .value(OpenAPI.Example(value: existingExample))
-        examples["Example 2"] = .value(OpenAPI.Example(value: [:]))
-        mediaType.examples = examples
-      } else if let existingExamples = mediaType.examples {
-        // Already has examples, add another
-        var examples = existingExamples
-        let nextIndex = examples.count + 1
-        examples["Example \(nextIndex)"] = .value(OpenAPI.Example(value: [:]))
-        mediaType.examples = examples
-      }
-
-      requestBodyValue.content[contentType] = mediaType
-      document[path: path][method: operation].requestBody = .value(requestBodyValue)
-    }
-  }
-
-  private var requestBodyDescriptionBinding: Binding<String> {
-    Binding(
-      get: {
-        if case .value(let requestBodyValue) = document[path: path][method: operation].requestBody {
-          return requestBodyValue.description ?? ""
-        }
-        return ""
-      },
-      set: { newValue in
-        if case .value(var requestBodyValue) = document[path: path][method: operation].requestBody {
-          requestBodyValue.description = newValue.isEmpty ? nil : newValue
-          document[path: path][method: operation].requestBody = .value(requestBodyValue)
-        }
-      }
-    )
-  }
-
-  var body: some View {
-    VStack(alignment: .leading, spacing: 8) {
-      HStack {
-        Text("Request Body Examples")
-          .font(.headline)
-
-        if isEditMode {
-          Spacer()
-
-          Button(action: {
-            deleteRequestBody()
-          }) {
-            Label("Delete", systemImage: "trash")
-              .foregroundColor(.red)
-          }
-          .buttonStyle(.plain)
-        }
-      }
-
-      // Description section
-      if requestBody.description != nil || isEditMode {
-        if requestBody.description != nil {
-          MarkdownTextView(markdown: requestBodyDescriptionBinding, editable: isEditMode)
-            .font(.body)
-            .foregroundColor(.secondary)
-        } else if isEditMode {
-          Button(action: addDescription) {
-            Label("Add Description", systemImage: "plus.circle")
-              .foregroundColor(.accentColor)
-          }
-          .buttonStyle(.plain)
-        }
-      }
-
-      if requestBody.required == true {
-        Text("Required")
-          .font(.caption)
-          .foregroundColor(.orange)
-          .padding(.horizontal, 8)
-          .padding(.vertical, 2)
-          .background(Color.orange.opacity(0.2))
-          .cornerRadius(4)
-      }
-
-      ForEach(Array(requestBody.content.keys.sorted()), id: \.self) { mediaTypeName in
-        if let mediaType = requestBody.content[mediaTypeName] {
-          VStack(alignment: .leading, spacing: 4) {
-            HStack {
-              if isEditMode {
-                MediaTypeNameField(
-                  mediaTypeName: mediaTypeName,
-                  onRename: { newName in
-                    renameContentType(from: mediaTypeName, to: newName)
-                  }
-                )
-
-                Spacer()
-
-                Button(action: {
-                  deleteContentType(mediaTypeName)
-                }) {
-                  Image(systemName: "trash")
-                    .foregroundColor(.red)
-                    .font(.caption)
-                }
-                .buttonStyle(.plain)
-              } else {
-                Text(mediaTypeName)
-                  .font(.caption.monospaced())
-                  .foregroundColor(.secondary)
-              }
-            }
-
-            RequestBodyExampleContentView(
-              mediaType: mediaType,
-              document: document,
-              contentType: mediaTypeName,
-              onAddExample: {
-                addExampleToMediaType(mediaTypeName)
-              },
-              onRenameExample: { oldKey, newKey in
-                renameExample(in: mediaTypeName, from: oldKey, to: newKey)
-              },
-              onUpdateSingleExample: { example in
-                updateSingleExample(mediaTypeName, example: example)
-              },
-              onUpdateNamedExample: { exampleKey, value in
-                updateNamedExample(mediaTypeName, exampleKey: exampleKey, value: value)
-              }
-            )
-          }
-        }
-      }
-
-      // Add Content button in edit mode
-      if isEditMode {
-        Button(action: addContent) {
-          Label("Add Content Type", systemImage: "plus.circle")
-            .foregroundColor(.accentColor)
-        }
-        .buttonStyle(.plain)
-        .disabled(getNextContentType() == nil)
-      }
-    }
+    document[requestBody: OperationReference(path: path, method: operation)].content.removeValue(forKey: contentType)
   }
 }
 
@@ -350,15 +251,62 @@ struct MediaTypeNameField: View {
 }
 
 struct RequestBodyExampleContentView: View {
-  let mediaType: OpenAPI.MediaType
+  @Binding var mediaTypeOptional: OpenAPI.MediaType?
   let document: OpenAPI.Document
   let contentType: String
-  let onAddExample: () -> Void
-  let onRenameExample: (String, String) -> Void
-  let onUpdateSingleExample: (OrderedJSONObject) -> Void
-  let onUpdateNamedExample: (String, OrderedJSONObject) -> Void
 
   @Environment(\.editMode) private var isEditMode
+
+  init(mediaType: Binding<OpenAPI.MediaType?>,
+       document: OpenAPI.Document,
+       contentType: String) {
+    self._mediaTypeOptional = mediaType
+    self.document = document
+    self.contentType = contentType
+  }
+
+  private var mediaType: OpenAPI.MediaType {
+    get { mediaTypeOptional ?? .init() }
+    nonmutating set { mediaTypeOptional = newValue }
+  }
+
+  private var examples: OrderedDictionary<String, OpenAPI.Referenceable<OpenAPI.Example>> {
+    get {
+      if let example = mediaType.example {
+        return ["": .value(.init(
+          summary: nil,
+          description: nil,
+          value: example,
+          externalValue: nil
+        ))]
+      } else if let examples = mediaType.examples {
+        return examples
+      } else {
+        return [:]
+      }
+    }
+    nonmutating set {
+      if newValue.isEmpty {
+        // If no examples left, set to nil
+        mediaType.example = nil
+        mediaType.examples = nil
+      } else if newValue.count == 1,
+                let remainingKey = newValue.keys.first,
+                remainingKey.isEmpty,
+                let example = newValue.values.first?.resolve(in: document),
+                example.description == nil,
+                example.summary == nil,
+                example.externalValue == nil,
+                let value = example.value {
+        // If only one example remains and its key is empty string, convert to single example
+        mediaType.examples = nil
+        mediaType.example = value
+      } else {
+        mediaType.example = nil
+        mediaType.examples = newValue
+      }
+    }
+  }
 
   var body: some View {
     HStack {
@@ -376,51 +324,52 @@ struct RequestBodyExampleContentView: View {
         }
 
         // Show single example if available
-        if let example = mediaType.example {
-          EditableJSONObjectView(json: Binding(
-            get: { example },
-            set: { newValue in
-              onUpdateSingleExample(newValue)
-            }
-          ))
-          .padding(12)
-        }
-        // Show named examples if available
-        else if let examples = mediaType.examples, !examples.isEmpty {
+        if !examples.isEmpty {
           ForEach(Array(examples.keys.sorted()), id: \.self) { exampleKey in
             if let exampleRef = examples[exampleKey],
                let example = exampleRef.resolve(in: document),
                let value = example.value {
               VStack(alignment: .leading, spacing: 4) {
-                if isEditMode {
-                  ExampleNameField(
-                    exampleName: exampleKey,
-                    onRename: { newName in
-                      onRenameExample(exampleKey, newName)
+                HStack {
+                  if isEditMode {
+                    ExampleNameField(
+                      exampleName: exampleKey,
+                      onRename: { newName in
+                        renameExample(from: exampleKey, to: newName)
+                      }
+                    )
+                    
+                    Spacer()
+                    
+                    Button(action: {
+                      deleteExample(exampleKey)
+                    }) {
+                      Image(systemName: "trash")
+                        .foregroundColor(.red)
+                        .font(.caption)
                     }
-                  )
-                } else if let summary = example.summary {
-                  Text(summary)
-                    .font(.caption.bold())
-                    .foregroundColor(.primary)
-                } else {
-                  Text(exampleKey)
-                    .font(.caption.bold())
-                    .foregroundColor(.primary)
+                    .buttonStyle(.plain)
+                  } else if let summary = example.summary {
+                    Text(summary)
+                      .font(.caption.bold())
+                      .foregroundColor(.primary)
+                  } else if exampleKey != "" {
+                    Text(exampleKey)
+                      .font(.caption.bold())
+                      .foregroundColor(.primary)
+                  }
                 }
                 EditableJSONObjectView(json: Binding(
                   get: { value },
                   set: { newValue in
-                    onUpdateNamedExample(exampleKey, newValue)
+                    updateValue(for: exampleKey, value: newValue)
                   }
                 ))
               }
               .padding(12)
             }
           }
-        }
-        // Fallback when no examples
-        else {
+        } else {
           Text("No examples available")
             .font(.caption)
             .foregroundColor(.secondary)
@@ -433,5 +382,56 @@ struct RequestBodyExampleContentView: View {
       RoundedRectangle(cornerRadius: 8)
         .fill(.secondary.opacity(0.1))
     )
+  }
+
+  private func onAddExample() {
+    if mediaType.example == nil && mediaType.examples == nil {
+      // No examples yet, add a single example
+      mediaType.example = [:]
+    } else if mediaType.example != nil && mediaType.examples == nil {
+      // Has single example, convert to examples
+      let existingExample = mediaType.example
+      mediaType.example = nil
+
+      var examples = OrderedDictionary<String, OpenAPI.Referenceable<OpenAPI.Example>>()
+      examples["Example 1"] = .value(OpenAPI.Example(value: existingExample))
+      examples["Example 2"] = .value(OpenAPI.Example(value: [:]))
+      mediaType.examples = examples
+    } else if let existingExamples = mediaType.examples {
+      // Already has examples, add another
+      var examples = existingExamples
+      let nextIndex = examples.count + 1
+      examples["Example \(nextIndex)"] = .value(OpenAPI.Example(value: [:]))
+      mediaType.examples = examples
+    }
+  }
+
+  private func renameExample(from oldKey: String, to newKey: String) {
+    guard oldKey != newKey else { return }
+
+    var newExamples = OrderedDictionary<String, OpenAPI.Referenceable<OpenAPI.Example>>()
+
+    // Preserve order while renaming
+    for (key, value) in examples {
+      if key == oldKey {
+        newExamples[newKey] = value
+      } else {
+        newExamples[key] = value
+      }
+    }
+
+    examples = newExamples
+  }
+
+  private func deleteExample(_ key: String) {
+    examples.removeValue(forKey: key)
+  }
+
+  private func updateValue(for key: String, value: OrderedJSONObject) {
+    guard var example = examples[key]?.resolve(in: document) else {
+      return
+    }
+    example.value = value
+    examples[key] = .value(example)
   }
 }

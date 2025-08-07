@@ -21,16 +21,7 @@ struct OperationDetailView: View {
   }
   
   private var operationDetails: OpenAPI.Operation? {
-    switch operation {
-    case .get: return pathItem.get
-    case .post: return pathItem.post
-    case .put: return pathItem.put
-    case .delete: return pathItem.delete
-    case .patch: return pathItem.patch
-    case .head: return pathItem.head
-    case .options: return pathItem.options
-    case .trace: return pathItem.trace
-    }
+    pathItem[method: operation]
   }
   
   private var operationDescriptionBinding: Binding<String> {
@@ -172,7 +163,11 @@ extension Optional where Wrapped == String {
   var defaultingToEmptyString: String {
     get { self ?? "" }
     set {
-      self = .some(newValue)
+      if newValue == "" {
+        self = .none
+      } else {
+        self = .some(newValue)
+      }
     }
   }
 }

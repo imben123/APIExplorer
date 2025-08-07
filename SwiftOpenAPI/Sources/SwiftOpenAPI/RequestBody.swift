@@ -18,7 +18,7 @@ public extension OpenAPI {
     public var content: OrderedDictionary<String, MediaType>
     
     /// Determines if the request body is required in the request.
-    public let required: Bool?
+    public var required: Bool?
 
     var originalDataHash: String?
 
