@@ -6,55 +6,50 @@
 //
 
 import Foundation
+import Collections
+
+public extension OpenAPI {
+  struct PathItemGroup {
+    let name: String
+    let items: [String]
+    let groups: [PathItemGroup]
+  }
+}
 
 public extension OpenAPI.Document {
-  struct PathGroup {
-    public let subdirectory: String?
-    public let paths: [(String, OpenAPI.PathItem)]
-    
-    public init(subdirectory: String?, paths: [(String, OpenAPI.PathItem)]) {
-      self.subdirectory = subdirectory
-      self.paths = paths
+  var ungroupedPathItems: [String] {
+    guard let paths else {
+      return []
     }
-  }
-  
-  var groupedPaths: [PathGroup] {
-    guard let paths = self.paths else { return [] }
-    
-    var groups: [String?: [(String, OpenAPI.PathItem)]] = [:]
-    
-    for (path, referenceablePathItem) in paths {
-      guard let pathItem = referenceablePathItem.resolve(in: self) else { continue }
-      
-      let subdirectoryKey = pathItem.subdirectories?.joined(separator: "/")
-      
-      if groups[subdirectoryKey] == nil {
-        groups[subdirectoryKey] = []
-      }
-      groups[subdirectoryKey]?.append((path, pathItem))
-    }
-    
-    // Sort paths within each group
-    for key in groups.keys {
-      groups[key]?.sort { $0.0 < $1.0 }
-    }
-    
-    // Create PathGroups, with ungrouped paths first
-    var result: [PathGroup] = []
-    
-    // Add ungrouped paths first (subdirectory = nil)
-    if let ungroupedPaths = groups[nil] {
-      result.append(PathGroup(subdirectory: nil, paths: ungroupedPaths))
-    }
-    
-    // Add grouped paths, sorted by subdirectory name
-    let sortedGroupKeys = groups.keys.compactMap { $0 }.sorted()
-    for subdirectory in sortedGroupKeys {
-      if let groupPaths = groups[subdirectory] {
-        result.append(PathGroup(subdirectory: subdirectory, paths: groupPaths))
+    var result: [String] = []
+    for path in paths.keys {
+      switch paths[path]! {
+      case .value:
+        result.append(path)
+      case .reference(let ref):
+        let normalizedRef = ref.removingPrefix("./").removingPrefix("paths/").removingPrefix("components/pathItems/")
+        let rootFiles = componentFiles?.pathItems?.items.keys ?? []
+        if ref.starts(with: "#") || rootFiles.contains(normalizedRef) {
+          result.append(path)
+        }
       }
     }
-    
     return result
+  }
+
+  var groupedPathItems: OrderedDictionary<String, OpenAPI.PathGroup> {
+    guard let paths, let rootGroup = componentFiles?.pathItems else {
+      return [:]
+    }
+    return rootGroup.groups.mapValues { $0.filtered(byPaths: paths.keys) }
+  }
+}
+
+extension OpenAPI.PathGroup {
+  func filtered<T: Collection>(byPaths paths: T) -> Self where T.Element == String {
+    .init(
+      items: items.filter { paths.contains($0.key) },
+      groups: groups.mapValues { $0.filtered(byPaths: paths) }
+    )
   }
 }

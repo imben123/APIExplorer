@@ -38,8 +38,8 @@ public extension OpenAPI {
     /// An object to hold reusable Callback Objects.
     public var callbacks: OrderedDictionary<String, Referenceable<Callback>>?
 
-    /// An object to hold reusable Path Item Objects.
-    public var pathItems: OrderedDictionary<String, Referenceable<PathItem>>?
+    /// A nested structure to hold reusable Path Item Objects with support for grouping.
+    public var pathItems: PathGroup?
 
     public init(
       schemas: OrderedDictionary<String, Referenceable<Schema>>? = nil,
@@ -51,7 +51,7 @@ public extension OpenAPI {
       securitySchemes: OrderedDictionary<String, Referenceable<SecurityScheme>>? = nil,
       links: OrderedDictionary<String, Referenceable<Link>>? = nil,
       callbacks: OrderedDictionary<String, Referenceable<Callback>>? = nil,
-      pathItems: OrderedDictionary<String, Referenceable<PathItem>>? = nil
+      pathItems: PathGroup? = nil
     ) {
       self.schemas = schemas
       self.responses = responses
@@ -87,54 +87,57 @@ public extension OpenAPI {
       case "callbacks":
         return callbacks?[name]?.resolve(in: document) as? T
       case "pathItems":
-        return pathItems?[name]?.resolve(in: document) as? T
+        // For pathItems, we need to search through the nested structure
+        if let allItems = pathItems?.allPathItems() {
+          return allItems[name]?.resolve(in: document) as? T
+        }
+        return nil
       default:
         return nil
       }
     }
 
-    mutating func updateReference(_ ref: String,
-                                  newValue: Any?,
-                                  useFullReferenceString: Bool = false) {
+    mutating func updateReference(_ ref: String, newValue: Any?) {
       // Normalize the reference path by removing leading "./" since our dicts don't have this prefix
-      var normalizedRef = ref.hasPrefix("./") ? String(ref.dropFirst(2)) : ref
+      let normalizedRef = ref.hasPrefix("./") ? String(ref.dropFirst(2)) : ref
 
-      let pathComponents = normalizedRef.split(separator: "/")
-      var componentType = String(pathComponents[0])
-
-      if componentType == "components" {
-        componentType = String(pathComponents[1])
+      var pathComponents = normalizedRef.split(separator: "/").map { String($0) }
+      if pathComponents[0] == "components" {
+        pathComponents = Array(pathComponents.dropFirst())
       }
 
-      if !useFullReferenceString {
-        if pathComponents.count == 2 {
-          normalizedRef = String(pathComponents[1])
-        } else if pathComponents.count == 3 {
-          normalizedRef = String(pathComponents[2])
-        }
+      let componentType = String(pathComponents[0])
+      let remainingPathComponents = Array(pathComponents.dropFirst().dropLast())
+      guard let componentName = remainingPathComponents.last else {
+        return
       }
 
       switch componentType {
       case "schemas":
-        schemas?[normalizedRef]!.value = newValue as! Schema?
+        schemas?[componentName]!.value = newValue as! Schema?
       case "responses":
-        responses?[normalizedRef]!.value = newValue as! Response?
+        responses?[componentName]!.value = newValue as! Response?
       case "parameters":
-        parameters?[normalizedRef]!.value = newValue as! Parameter?
+        parameters?[componentName]!.value = newValue as! Parameter?
       case "examples":
-        examples?[normalizedRef]!.value = newValue as! Example?
+        examples?[componentName]!.value = newValue as! Example?
       case "requestBodies":
-        requestBodies?[normalizedRef]!.value = newValue as! RequestBody?
+        requestBodies?[componentName]!.value = newValue as! RequestBody?
       case "headers":
-        headers?[normalizedRef]!.value = newValue as! Header?
+        headers?[componentName]!.value = newValue as! Header?
       case "securitySchemes":
-        securitySchemes?[normalizedRef]!.value = newValue as! SecurityScheme?
+        securitySchemes?[componentName]!.value = newValue as! SecurityScheme?
       case "links":
-        links?[normalizedRef]!.value = newValue as! Link?
+        links?[componentName]!.value = newValue as! Link?
       case "callbacks":
-        callbacks?[normalizedRef]!.value = newValue as! Callback?
-      case "pathItems":
-        pathItems?[normalizedRef]!.value = newValue as! PathItem?
+        callbacks?[componentName]!.value = newValue as! Callback?
+      case "pathItems", "paths":
+        if pathItems == nil {
+          pathItems = PathGroup()
+        }
+        pathItems?.updateItem(in: remainingPathComponents,
+                              name: componentName,
+                              updatedItem: .value(newValue as! PathItem))
       default:
         fatalError()
       }

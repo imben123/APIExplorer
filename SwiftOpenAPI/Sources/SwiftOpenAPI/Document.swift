@@ -73,22 +73,23 @@ public extension OpenAPI {
       // componentFiles, originalDataHash, and otherFiles are intentionally excluded from Codable - they're not part of OpenAPI spec
     }
 
-    public subscript(path ref: String) -> PathItem {
+    public subscript(path pathString: String) -> PathItem {
       get {
-        guard let result = paths?[ref]?.resolve(in: self) else {
+        guard let result = paths?[pathString]?.resolve(in: self) else {
           return PathItem()
         }
         return result
       }
       set {
-        if let ref = paths![ref]!.ref {
-          let normalizedRef = ref.hasPrefix("./") ? String(ref.dropFirst(2)) : ref
-          componentFiles!.pathItems![normalizedRef]!.value = newValue
+        if case .reference = paths?[pathString] {
+          var updatedReference = paths![pathString]!
+          updatedReference.update(in: &self, newValue: newValue)
+          paths![pathString]! = updatedReference
         } else {
           if paths == nil {
             paths = [:]
           }
-          paths?[ref] = .value(newValue)
+          paths![pathString] = .value(newValue)
         }
       }
     }
@@ -198,7 +199,8 @@ public extension OpenAPI {
       var securitySchemes: OrderedDictionary<String, SecurityScheme> = [:]
       var links: OrderedDictionary<String, Link> = [:]
       var callbacks: OrderedDictionary<String, Callback> = [:]
-      var pathItems: OrderedDictionary<String, PathItem> = [:]
+      var pathItems = OpenAPI.PathGroup()
+
       var otherFiles: OrderedDictionary<String, Data> = [:]
       
       func parseFile<T: Decodable>(_ type: T.Type, from data: Data, fileName: String) throws -> T {
@@ -226,7 +228,12 @@ public extension OpenAPI {
       
       func collectFiles(from wrapper: FileWrapper, basePath: String = "") {
         guard let fileWrappers = wrapper.fileWrappers else { return }
-        
+
+        let isPathsDirectory = basePath.hasPrefix("paths/") || basePath.hasPrefix("components/pathItems")
+        if fileWrappers.isEmpty && isPathsDirectory {
+          pathItems.addGroups(forPath: basePath)
+        }
+
         for (fileName, fileWrapper) in fileWrappers {
           let filePath = basePath.isEmpty ? fileName : "\(basePath)/\(fileName)"
           
@@ -252,32 +259,10 @@ public extension OpenAPI {
                 let reserializedData = try encoder.encode(pathItem).data(using: .utf8)!
                 let hash = reserializedData.calculateHash()
                 
-                // Extract subdirectory components (everything between "paths" and the filename)
-                let subdirectories = Array(pathComponents[1..<pathComponents.count-1])
-                
-                // Create a new PathItem with subdirectories if there are any
-                if !subdirectories.isEmpty {
-                  pathItem = PathItem(
-                    summary: pathItem.summary,
-                    description: pathItem.description,
-                    get: pathItem.get,
-                    put: pathItem.put,
-                    post: pathItem.post,
-                    delete: pathItem.delete,
-                    options: pathItem.options,
-                    head: pathItem.head,
-                    patch: pathItem.patch,
-                    trace: pathItem.trace,
-                    servers: pathItem.servers,
-                    parameters: pathItem.parameters,
-                    subdirectories: subdirectories
-                  )
-                }
-                
                 // Set hash on PathItem
                 pathItem.originalDataHash = hash
                 
-                pathItems[filePath] = pathItem
+                pathItems[filePath] = .value(pathItem)
               }
               // Handle components directories (allow subdirectories)
               else if pathComponents.count >= 3 && pathComponents[0] == "components" {
@@ -365,32 +350,10 @@ public extension OpenAPI {
                   let reserializedData = try encoder.encode(pathItem).data(using: .utf8)!
                   let hash = reserializedData.calculateHash()
                   
-                  // Extract subdirectory components (everything between "components/pathItems" and the filename)
-                  let subdirectories = Array(pathComponents[2..<pathComponents.count-1])
-                  
-                  // Create a new PathItem with subdirectories if there are any
-                  if !subdirectories.isEmpty {
-                    pathItem = PathItem(
-                      summary: pathItem.summary,
-                      description: pathItem.description,
-                      get: pathItem.get,
-                      put: pathItem.put,
-                      post: pathItem.post,
-                      delete: pathItem.delete,
-                      options: pathItem.options,
-                      head: pathItem.head,
-                      patch: pathItem.patch,
-                      trace: pathItem.trace,
-                      servers: pathItem.servers,
-                      parameters: pathItem.parameters,
-                      subdirectories: subdirectories
-                    )
-                  }
-                  
                   // Set hash on PathItem
                   pathItem.originalDataHash = hash
                   
-                  pathItems[filePath] = pathItem
+                  pathItems[filePath] = .value(pathItem)
                 default:
                   // Skip unsupported component types
                   continue
@@ -436,7 +399,7 @@ public extension OpenAPI {
               securitySchemes: securitySchemes.isEmpty ? nil : securitySchemes.mapValues { .value($0) },
               links: links.isEmpty ? nil : links.mapValues { .value($0) },
               callbacks: callbacks.isEmpty ? nil : callbacks.mapValues { .value($0) },
-              pathItems: pathItems.isEmpty ? nil : pathItems.mapValues { .value($0) }
+              pathItems: pathItems
             )
           }
 

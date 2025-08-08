@@ -20,5 +20,6 @@ struct APIExplorerApp: App {
     DocumentGroup(newDocument: OpenAPIDocument()) { file in
       ContentView(document: file.$document)
     }
+    .defaultSize(width: 1450, height: 1010)
   }
 }

@@ -168,32 +168,51 @@ private extension OpenAPI.Document {
   
   /// Adds path item files to the directory
   func addPathItemFiles(
-    _ files: OrderedDictionary<String, OpenAPI.Referenceable<OpenAPI.PathItem>>?,
+    _ pathGroup: OpenAPI.PathGroup?,
     to directoryWrapper: FileWrapper,
     mainFileName: String,
     configuration: FileDocument.WriteConfiguration
   ) {
-    guard let files = files else { return }
+    guard let pathGroup = pathGroup else { return }
     
-    for (filePath, referenceablePathItem) in files {
+    // Recursively add path items from the group structure
+    addPathItemsFromGroup(
+      pathGroup,
+      to: directoryWrapper,
+      basePath: ["paths"],
+      mainFileName: mainFileName,
+      configuration: configuration
+    )
+  }
+  
+  /// Recursively adds path items from a PathGroup
+  func addPathItemsFromGroup(
+    _ group: OpenAPI.PathGroup,
+    to directoryWrapper: FileWrapper,
+    basePath: [String],
+    mainFileName: String,
+    configuration: FileDocument.WriteConfiguration
+  ) {
+    // Add items directly in this group
+    for (fileName, referenceablePathItem) in group.items {
       // Skip the main OpenAPI file to avoid duplication
-      if filePath == mainFileName {
+      if fileName == mainFileName {
         continue
       }
-      
+
       // Extract the PathItem from the Referenceable
       guard case let .value(pathItem) = referenceablePathItem else {
         continue // Skip references, only handle direct values
       }
-      
+
       let encoder = YAMLEncoder.default
       encoder.orderedDictionaryCodingStrategy = .keyedContainer
       let newData = try! encoder.encode(pathItem).data(using: .utf8)!
-      
-      // Use subdirectories from PathItem if available, otherwise use original filePath
-      let pathComponents = getPathComponents(for: pathItem, originalFilePath: filePath)
+
+      // Build full path components
+      let pathComponents = basePath + [fileName]
       let actualFilePath = pathComponents.joined(separator: "/")
-      
+
       // Check if PathItem has an originalDataHash for change detection
       let finalData: Data
       if let originalHash = pathItem.originalDataHash,
@@ -204,11 +223,23 @@ private extension OpenAPI.Document {
       } else {
         finalData = newData
       }
-      
+
       addFileToDirectoryStructure(
         data: finalData,
         pathComponents: pathComponents,
         to: directoryWrapper
+      )
+    }
+    
+    // Recursively add items from subgroups
+    for (groupName, subgroup) in group.groups {
+      let newBasePath = basePath + [groupName]
+      addPathItemsFromGroup(
+        subgroup,
+        to: directoryWrapper,
+        basePath: newBasePath,
+        mainFileName: mainFileName,
+        configuration: configuration
       )
     }
   }
@@ -233,17 +264,6 @@ private extension OpenAPI.Document {
     }
   }
   
-  /// Gets path components for a PathItem, using subdirectories if available
-  func getPathComponents(for pathItem: OpenAPI.PathItem, originalFilePath: String) -> [String] {
-    if let subdirectories = pathItem.subdirectories, !subdirectories.isEmpty {
-      // Reconstruct path using subdirectories
-      let fileName = (originalFilePath as NSString).lastPathComponent
-      return ["paths"] + subdirectories + [fileName]
-    } else {
-      // Use original filePath
-      return originalFilePath.split(separator: "/").map(String.init)
-    }
-  }
   
   /// Retrieves original data from existing file structure
   func getOriginalData(for filePath: String, from existingFile: FileWrapper?) -> Data? {

@@ -19,8 +19,6 @@ struct PathsList: View {
   @FocusState private var isListFocused: Bool
   @Environment(\.editMode) private var isEditMode
   
-  typealias PathGroup = OpenAPI.Document.PathGroup
-  
   var body: some View {
     VStack(spacing: 0) {
       if isEditMode {
@@ -53,21 +51,23 @@ struct PathsList: View {
           }
         }
       )) {
-        let groups = document.groupedPaths
-        if groups.isEmpty {
+        if document.paths?.isEmpty != false {
           EmptyPathsView()
         } else {
-          ForEach(Array(groups.enumerated()), id: \.offset) { index, group in
-            PathGroupSection(
-              group: group,
-              isExpanded: isGroupExpanded(group: group),
-              onToggle: {
-                toggleDirectory(group: group)
-              },
-              onDeleteOperation: { path, operation in
-                deleteOperation(path: path, operation: operation)
-              }
+          ForEach(document.ungroupedPathItems, id: \.self) { path in
+            PathItemSection(
+              path: path,
+              pathItem: document[path: path],
+              isIndented: false,
+              onDeleteOperation: deleteOperation
             )
+          }
+
+          ForEach(document.groupedPathItems.keys, id: \.self) { groupName in
+            PathGroupListItem(name: groupName,
+                              group: document.groupedPathItems[groupName]!,
+                              document: document,
+                              onDeleteOperation: deleteOperation)
           }
         }
       }
@@ -91,21 +91,6 @@ struct PathsList: View {
       } message: {
         Text("Are you sure you want to delete this operation? This action cannot be undone.")
       }
-    }
-  }
-  
-  private func isGroupExpanded(group: OpenAPI.Document.PathGroup) -> Bool {
-    return group.subdirectory == nil || !collapsedDirectories.contains(group.subdirectory ?? "")
-  }
-  
-  private func toggleDirectory(group: OpenAPI.Document.PathGroup) {
-    guard let subdirectory = group.subdirectory else {
-      return
-    }
-    if collapsedDirectories.contains(subdirectory) {
-      collapsedDirectories.remove(subdirectory)
-    } else {
-      collapsedDirectories.insert(subdirectory)
     }
   }
   

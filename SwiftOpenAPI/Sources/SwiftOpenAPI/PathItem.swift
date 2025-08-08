@@ -46,10 +46,6 @@ public extension OpenAPI {
     /// A list of parameters that are applicable for all the operations in this path.
     public let parameters: [Referenceable<Parameter>]?
 
-    /// An array of subdirectory components for organizing paths from referenced files.
-    /// This property is not encoded/decoded and is used for preserving file organization.
-    public var subdirectories: [String]?
-
     var originalDataHash: String?
 
     public init(
@@ -64,8 +60,7 @@ public extension OpenAPI {
       patch: Operation? = nil,
       trace: Operation? = nil,
       servers: [Server]? = nil,
-      parameters: [Referenceable<Parameter>]? = nil,
-      subdirectories: [String]? = nil
+      parameters: [Referenceable<Parameter>]? = nil
     ) {
       self.summary = summary
       self.description = description
@@ -79,7 +74,6 @@ public extension OpenAPI {
       self.trace = trace
       self.servers = servers
       self.parameters = parameters
-      self.subdirectories = subdirectories
     }
 
     private enum CodingKeys: String, CodingKey {

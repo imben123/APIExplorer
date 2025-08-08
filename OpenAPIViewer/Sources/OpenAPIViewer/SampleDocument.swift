@@ -31,13 +31,11 @@ let sampleDocument: OpenAPI.Document = {
   )
   
   let userPathItem = OpenAPI.PathItem(
-    get: getUserOperation,
-    subdirectories: ["users"]
+    get: getUserOperation
   )
   
   let usersPathItem = OpenAPI.PathItem(
-    post: createUserOperation,
-    subdirectories: ["users"]
+    post: createUserOperation
   )
   
   let healthPathItem = OpenAPI.PathItem(

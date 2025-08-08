@@ -21,7 +21,8 @@
       "Bash(swift:*)",
       "Bash(grep:*)",
       "Bash(true)",
-      "Bash(rmdir:*)"
+      "Bash(rmdir:*)",
+      "Bash(rm:*)"
     ],
     "deny": []
   }

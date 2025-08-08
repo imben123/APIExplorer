@@ -12,7 +12,7 @@ public extension OpenAPI {
   indirect enum Referenceable<T: Model>: Model {
     case reference(String)
     case value(T)
-    
+
     /// Returns the reference string if this is a reference, nil otherwise.
     public var ref: String? {
       switch self {
@@ -22,7 +22,7 @@ public extension OpenAPI {
         return nil
       }
     }
-    
+
     /// Returns the actual value if this contains a value, nil if it's a reference.
     public var value: T? {
       get {
@@ -79,11 +79,7 @@ public extension OpenAPI {
         // Parse the reference path (e.g., "#/components/schemas/Pet")
         guard ref.hasPrefix("#/components/") else {
           // Handle external references or other formats
-          document.componentFiles?.updateReference(
-            ref,
-            newValue: newValue,
-            useFullReferenceString: true
-          )
+          document.componentFiles?.updateReference(ref, newValue: newValue)
           return
         }
 
@@ -109,73 +105,48 @@ public extension OpenAPI {
       let normalizedRef = ref.hasPrefix("./") ? String(ref.dropFirst(2)) : ref
 
       // Handle different component types from external files
-      if let schemas = componentFiles.schemas, let schema = schemas[normalizedRef]?.resolve(in: document) as? T {
+      if let schemas = componentFiles.schemas,
+         let schema = schemas[normalizedRef]?.resolve(in: document) as? T {
         return schema
       }
-      if let responses = componentFiles.responses, let response = responses[normalizedRef]?.resolve(in: document) as? T {
+      if let responses = componentFiles.responses,
+         let response = responses[normalizedRef]?.resolve(in: document) as? T {
         return response
       }
-      if let parameters = componentFiles.parameters, let parameter = parameters[normalizedRef]?.resolve(in: document) as? T {
+      if let parameters = componentFiles.parameters,
+         let parameter = parameters[normalizedRef]?.resolve(in: document) as? T {
         return parameter
       }
-      if let examples = componentFiles.examples, let example = examples[normalizedRef]?.resolve(in: document) as? T {
+      if let examples = componentFiles.examples,
+         let example = examples[normalizedRef]?.resolve(in: document) as? T {
         return example
       }
-      if let requestBodies = componentFiles.requestBodies, let requestBody = requestBodies[normalizedRef]?.resolve(in: document) as? T {
+      if let requestBodies = componentFiles.requestBodies,
+         let requestBody = requestBodies[normalizedRef]?.resolve(in: document) as? T {
         return requestBody
       }
-      if let headers = componentFiles.headers, let header = headers[normalizedRef]?.resolve(in: document) as? T {
+      if let headers = componentFiles.headers,
+         let header = headers[normalizedRef]?.resolve(in: document) as? T {
         return header
       }
-      if let securitySchemes = componentFiles.securitySchemes, let securityScheme = securitySchemes[normalizedRef]?.resolve(in: document) as? T {
+      if let securitySchemes = componentFiles.securitySchemes,
+         let securityScheme = securitySchemes[normalizedRef]?.resolve(in: document) as? T {
         return securityScheme
       }
-      if let links = componentFiles.links, let link = links[normalizedRef]?.resolve(in: document) as? T {
+      if let links = componentFiles.links,
+         let link = links[normalizedRef]?.resolve(in: document) as? T {
         return link
       }
-      if let callbacks = componentFiles.callbacks, let callback = callbacks[normalizedRef]?.resolve(in: document) as? T {
+      if let callbacks = componentFiles.callbacks,
+         let callback = callbacks[normalizedRef]?.resolve(in: document) as? T {
         return callback
       }
-      if let pathItems = componentFiles.pathItems, let pathItem = pathItems[normalizedRef]?.resolve(in: document) as? T {
+      if let pathItems = componentFiles.pathItems,
+         let pathItem = pathItems[normalizedRef]?.resolve(in: document) as? T {
         return pathItem
       }
 
       return nil
-    }
-
-    /// Resolves external references (files, URLs, etc.)
-    private func updateExternalReference(_ ref: String, newValue: Any?, in document: inout Document) {
-      // Normalize the reference path by removing leading "./" since our dicts don't have this prefix
-      let normalizedRef = ref.hasPrefix("./") ? String(ref.dropFirst(2)) : ref
-
-      let pathComponents = normalizedRef.split(separator: "/")
-      let componentType = String(pathComponents[0])
-
-      // Use type erasure to handle different component types
-      switch componentType {
-      case "schemas":
-        document.componentFiles!.schemas?[normalizedRef]!.value = newValue as! Schema?
-      case "responses":
-        document.componentFiles!.responses?[normalizedRef]!.value = newValue as! Response?
-      case "parameters":
-        document.componentFiles!.parameters?[normalizedRef]!.value = newValue as! Parameter?
-      case "examples":
-        document.componentFiles!.examples?[normalizedRef]!.value = newValue as! Example?
-      case "requestBodies":
-        document.componentFiles!.requestBodies?[normalizedRef]!.value = newValue as! RequestBody?
-      case "headers":
-        document.componentFiles!.headers?[normalizedRef]!.value = newValue as! Header?
-      case "securitySchemes":
-        document.componentFiles!.securitySchemes?[normalizedRef]!.value = newValue as! SecurityScheme?
-      case "links":
-        document.componentFiles!.links?[normalizedRef]!.value = newValue as! Link?
-      case "callbacks":
-        document.componentFiles!.callbacks?[normalizedRef]!.value = newValue as! Callback?
-      case "pathItems":
-        document.componentFiles!.pathItems?[normalizedRef]!.value = newValue as! PathItem?
-      default:
-        fatalError()
-      }
     }
 
     public init(from decoder: Decoder) throws {
