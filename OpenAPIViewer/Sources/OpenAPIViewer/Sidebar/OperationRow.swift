@@ -12,7 +12,7 @@ struct OperationRow: View {
   let method: HTTPMethod
   let path: String
   let operation: OpenAPI.Operation
-  let isIndented: Bool
+  let indentLevel: Int
   let onDelete: (String, String) -> Void
   
   private var methodColor: Color {
@@ -44,7 +44,7 @@ struct OperationRow: View {
       
       Spacer(minLength: 0)
     }
-    .padding(.leading, isIndented ? 8 : 0)
+    .padding(.leading, CGFloat(indentLevel * 8))
     .padding(.vertical, 3)
     .tag("\(path)|\(method.rawValue)")
     .contextMenu {

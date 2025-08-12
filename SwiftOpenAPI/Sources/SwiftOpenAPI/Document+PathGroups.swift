@@ -27,7 +27,7 @@ public extension OpenAPI.Document {
       case .value:
         result.append(path)
       case .reference(let ref):
-        let normalizedRef = ref.removingPrefix("./").removingPrefix("paths/").removingPrefix("components/pathItems/")
+        let normalizedRef = ref.removingPrefix("./")
         let rootFiles = componentFiles?.pathItems?.items.keys ?? []
         if ref.starts(with: "#") || rootFiles.contains(normalizedRef) {
           result.append(path)
@@ -41,7 +41,33 @@ public extension OpenAPI.Document {
     guard let paths, let rootGroup = componentFiles?.pathItems else {
       return [:]
     }
-    return rootGroup.groups.mapValues { $0.filtered(byPaths: paths.keys) }
+    let filePaths = paths.keys
+      .compactMap { paths[$0]!.ref }
+      .filter { !$0.starts(with: "#") }
+      .map { $0.removingPrefix("./") }
+    return rootGroup.groups.mapValues { $0.filtered(byPaths: filePaths) }
+  }
+
+  subscript(filePath filePath: String) -> OpenAPI.PathItem {
+    get {
+      let path = path(for: filePath)!
+      return self[path: path]
+    }
+    set {
+      guard let path = path(for: filePath) else {
+        return
+      }
+      self[path: path] = newValue
+    }
+  }
+
+  func path(for filePath: String) -> String? {
+    return paths?.first { (key, value) in
+      guard let ref = value.ref else {
+        return false
+      }
+      return filePath == ref.removingPrefix("./")
+    }?.key
   }
 }
 

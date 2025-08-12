@@ -97,7 +97,7 @@ public extension OpenAPI {
       }
     }
 
-    mutating func updateReference(_ ref: String, newValue: Any?) {
+    mutating func updateReference(_ ref: String, newValue: Any?, useFullPathAsKey: Bool) {
       // Normalize the reference path by removing leading "./" since our dicts don't have this prefix
       let normalizedRef = ref.hasPrefix("./") ? String(ref.dropFirst(2)) : ref
 
@@ -112,31 +112,33 @@ public extension OpenAPI {
         return
       }
 
+      let key = useFullPathAsKey ? normalizedRef : componentName
+
       switch componentType {
       case "schemas":
-        schemas?[componentName]!.value = newValue as! Schema?
+        schemas?[key]!.value = newValue as! Schema?
       case "responses":
-        responses?[componentName]!.value = newValue as! Response?
+        responses?[key]!.value = newValue as! Response?
       case "parameters":
-        parameters?[componentName]!.value = newValue as! Parameter?
+        parameters?[key]!.value = newValue as! Parameter?
       case "examples":
-        examples?[componentName]!.value = newValue as! Example?
+        examples?[key]!.value = newValue as! Example?
       case "requestBodies":
-        requestBodies?[componentName]!.value = newValue as! RequestBody?
+        requestBodies?[key]!.value = newValue as! RequestBody?
       case "headers":
-        headers?[componentName]!.value = newValue as! Header?
+        headers?[key]!.value = newValue as! Header?
       case "securitySchemes":
-        securitySchemes?[componentName]!.value = newValue as! SecurityScheme?
+        securitySchemes?[key]!.value = newValue as! SecurityScheme?
       case "links":
-        links?[componentName]!.value = newValue as! Link?
+        links?[key]!.value = newValue as! Link?
       case "callbacks":
-        callbacks?[componentName]!.value = newValue as! Callback?
+        callbacks?[key]!.value = newValue as! Callback?
       case "pathItems", "paths":
         if pathItems == nil {
           pathItems = PathGroup()
         }
         pathItems?.updateItem(in: remainingPathComponents,
-                              name: componentName,
+                              filePath: key,
                               updatedItem: .value(newValue as! PathItem))
       default:
         fatalError()

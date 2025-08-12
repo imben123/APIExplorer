@@ -58,7 +58,7 @@ struct PathsList: View {
             PathItemSection(
               path: path,
               pathItem: document[path: path],
-              isIndented: false,
+              indentLevel: 0,
               onDeleteOperation: deleteOperation
             )
           }
@@ -66,7 +66,7 @@ struct PathsList: View {
           ForEach(document.groupedPathItems.keys, id: \.self) { groupName in
             PathGroupListItem(name: groupName,
                               group: document.groupedPathItems[groupName]!,
-                              document: document,
+                              document: $document,
                               onDeleteOperation: deleteOperation)
           }
         }
@@ -123,7 +123,7 @@ struct PathsList: View {
     while existingPaths.contains("\(basePath)\(counter)") {
       counter += 1
     }
-    return "\(basePath)\(counter)"
+    return "/\(basePath)\(counter)"
   }
   
   private func getRandomNoun() -> String {

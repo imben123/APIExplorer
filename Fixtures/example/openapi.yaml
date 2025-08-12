@@ -14,3 +14,9 @@ servers:
 paths:
   /:
     $ref: ./paths/healthcheck.yaml
+  /penguin:
+    $ref: ./paths/group1/penguin.yaml
+  /hippo:
+    $ref: ./paths/group2/hippo.yaml
+  /penguin/nested:
+    $ref: ./paths/group1/nested/nested.yaml

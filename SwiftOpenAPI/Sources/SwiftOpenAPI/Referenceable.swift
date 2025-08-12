@@ -79,7 +79,7 @@ public extension OpenAPI {
         // Parse the reference path (e.g., "#/components/schemas/Pet")
         guard ref.hasPrefix("#/components/") else {
           // Handle external references or other formats
-          document.componentFiles?.updateReference(ref, newValue: newValue)
+          document.componentFiles?.updateReference(ref, newValue: newValue, useFullPathAsKey: true)
           return
         }
 
@@ -91,7 +91,8 @@ public extension OpenAPI {
 
         document.components?.updateReference(
           "\(componentType)/\(componentName)",
-          newValue: newValue
+          newValue: newValue,
+          useFullPathAsKey: false
         )
       }
     }

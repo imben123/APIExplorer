@@ -57,15 +57,13 @@ public extension OpenAPI {
     subscript(ref: String) -> Referenceable<PathItem>? {
       get {
         let normalizedRef = ref.dropPrefix("./").dropPrefix("components/").dropPrefix("pathItems/").dropPrefix("paths/")
-        var subdirectories = normalizedRef.split(separator: "/").map { String($0) }
-        let name = subdirectories.removeLast()
-        return getItem(in: subdirectories, name: name)
+        let subdirectories = normalizedRef.split(separator: "/").dropLast().map { String($0) }
+        return getItem(in: subdirectories, filePath: String(ref.dropPrefix("./")))
       }
       set {
         let normalizedRef = ref.dropPrefix("./").dropPrefix("components/").dropPrefix("pathItems/").dropPrefix("paths/")
-        var subdirectories = normalizedRef.split(separator: "/").map { String($0) }
-        let name = subdirectories.removeLast()
-        updateItem(in: subdirectories, name: name, updatedItem: newValue)
+        let subdirectories = normalizedRef.split(separator: "/").dropLast().map { String($0) }
+        updateItem(in: subdirectories, filePath: String(ref.dropPrefix("./")), updatedItem: newValue)
       }
     }
 
@@ -104,28 +102,28 @@ public extension OpenAPI {
       }
     }
 
-    func getItem(in subdirectories: [String], name: String) -> Referenceable<PathItem>? {
+    func getItem(in subdirectories: [String], filePath: String) -> Referenceable<PathItem>? {
       guard subdirectories.isEmpty else {
         var subdirectories = subdirectories
         let groupName = subdirectories.removeFirst()
-        return groups[groupName]!.getItem(in: subdirectories, name: name)
+        return groups[groupName]!.getItem(in: subdirectories, filePath: filePath)
       }
-      return items[name]
+      return items[filePath]
     }
 
-    mutating func updateItem(in subdirectories: [String], name: String, updatedItem: Referenceable<PathItem>?) {
+    mutating func updateItem(in subdirectories: [String], filePath: String, updatedItem: Referenceable<PathItem>?) {
       guard subdirectories.isEmpty else {
         var subdirectories = subdirectories
         let groupName = subdirectories.removeFirst()
         if groups[groupName] == nil {
           groups[groupName] = PathGroup()
         }
-        return groups[groupName]!.updateItem(in: subdirectories, name: name, updatedItem: updatedItem)
+        return groups[groupName]!.updateItem(in: subdirectories, filePath: filePath, updatedItem: updatedItem)
       }
       if let updatedItem {
-        items[name] = updatedItem
+        items[filePath] = updatedItem
       } else {
-        items.removeValue(forKey: name)
+        items.removeValue(forKey: filePath)
       }
     }
   }
