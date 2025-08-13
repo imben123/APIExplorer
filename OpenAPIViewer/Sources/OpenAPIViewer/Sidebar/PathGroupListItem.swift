@@ -64,12 +64,18 @@ struct PathGroupListItem: View {
 
     // Directory contents (if expanded)
     if isExpanded {
-      ForEach(group.items.keys, id: \.self) { filePath in
+      ForEach(Array(group.items.keys.enumerated()), id: \.element) { index, filePath in
         if let path = document.path(for: filePath) {
+          // Build group path for this nested group
+          let currentGroupPath = pathPrefix.isEmpty ? [name] : pathPrefix.split(separator: "/").map(String.init) + [name]
+          
           PathItemSection(path: path,
                           pathItem: document[filePath: filePath],
                           indentLevel: indentLevel + 1,
-                          onDeleteOperation: onDeleteOperation)
+                          onDeleteOperation: onDeleteOperation,
+                          document: $document,
+                          groupPath: currentGroupPath,
+                          indexInGroup: index)
         }
       }
 

@@ -55,36 +55,17 @@ struct PathsList: View {
         if document.paths?.isEmpty != false {
           EmptyPathsView()
         } else {
-          // Root level paths section with drop support
-          VStack(spacing: 0) {
-            if !document.ungroupedPathItems.isEmpty || isRootDropTargeted {
-              VStack(spacing: 0) {
-                ForEach(document.ungroupedPathItems, id: \.self) { path in
-                  PathItemSection(
-                    path: path,
-                    pathItem: document[path: path],
-                    indentLevel: 0,
-                    onDeleteOperation: deleteOperation
-                  )
-                }
-                if isRootDropTargeted && document.ungroupedPathItems.isEmpty {
-                  HStack {
-                    Text("Drop here to move to root")
-                      .font(.caption)
-                      .foregroundColor(.secondary)
-                    Spacer()
-                  }
-                  .padding(.horizontal)
-                  .padding(.vertical, 8)
-                }
-              }
-              .background(isRootDropTargeted ? Color.blue.opacity(0.1) : Color.clear)
-              .dropDestination(for: OperationDragItem.self) { items, location in
-                handleRootDrop(items: items)
-              } isTargeted: { isTargeted in
-                isRootDropTargeted = isTargeted
-              }
-            }
+          // Root level paths section
+          ForEach(Array(document.ungroupedPathItems.enumerated()), id: \.element) { index, path in
+            PathItemSection(
+              path: path,
+              pathItem: document[path: path],
+              indentLevel: 0,
+              onDeleteOperation: deleteOperation,
+              document: $document,
+              groupPath: [],
+              indexInGroup: index
+            )
           }
 
           ForEach(document.groupedPathItems.keys, id: \.self) { groupName in

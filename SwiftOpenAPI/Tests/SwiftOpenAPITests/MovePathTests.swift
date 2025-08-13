@@ -189,4 +189,87 @@ struct MovePathTests {
     // Verify the component file was created with escaped name
     #expect(document.componentFiles?.pathItems?["paths/v1/users_{id}_posts.yaml"] != nil)
   }
+  
+  @Test("Move path to specific index in group")
+  func movePathToSpecificIndexInGroup() throws {
+    var document = OpenAPI.Document(
+      openapi: "3.0.0",
+      info: OpenAPI.Info(title: "Test API", version: "1.0.0")
+    )
+    
+    // Create a group with existing items
+    document.componentFiles = OpenAPI.Components()
+    var rootPathItems = OpenAPI.PathGroup()
+    
+    var groupV1 = OpenAPI.PathGroup()
+    groupV1.items["paths/v1/first.yaml"] = .value(OpenAPI.PathItem())
+    groupV1.items["paths/v1/second.yaml"] = .value(OpenAPI.PathItem())
+    groupV1.items["paths/v1/third.yaml"] = .value(OpenAPI.PathItem())
+    
+    rootPathItems.groups["v1"] = groupV1
+    document.componentFiles?.pathItems = rootPathItems
+    
+    // Set up paths
+    document.paths = [
+      "/first": .reference("./paths/v1/first.yaml"),
+      "/second": .reference("./paths/v1/second.yaml"), 
+      "/third": .reference("./paths/v1/third.yaml"),
+      "/new-path": .value(OpenAPI.PathItem())
+    ]
+    
+    // Move the inline path to index 1 in the v1 group
+    let success = document.movePathToGroup("/new-path", groupPath: ["v1"], index: 1)
+    
+    // Verify the move was successful
+    #expect(success == true)
+    
+    // Check that the path is now a reference
+    if case .reference = document.paths?["/new-path"] {
+      // Good
+    } else {
+      Issue.record("Path should be a reference after moving to group")
+    }
+    
+    // Verify the ordering in the group
+    let v1GroupItems = Array(document.componentFiles?.pathItems?.groups["v1"]?.items.keys ?? [])
+    #expect(v1GroupItems.count == 4)
+    
+    // The new path should be at index 1
+    #expect(v1GroupItems[1].contains("new-path") || v1GroupItems[1].contains("new_path"))
+  }
+  
+  @Test("Move path to index 0 in root group")
+  func movePathToIndex0InRootGroup() throws {
+    var document = OpenAPI.Document(
+      openapi: "3.0.0",
+      info: OpenAPI.Info(title: "Test API", version: "1.0.0")
+    )
+    
+    // Create root items
+    document.componentFiles = OpenAPI.Components()
+    var rootPathItems = OpenAPI.PathGroup()
+    rootPathItems.items["paths/existing1.yaml"] = .value(OpenAPI.PathItem())
+    rootPathItems.items["paths/existing2.yaml"] = .value(OpenAPI.PathItem())
+    document.componentFiles?.pathItems = rootPathItems
+    
+    // Set up paths
+    document.paths = [
+      "/existing1": .reference("./paths/existing1.yaml"),
+      "/existing2": .reference("./paths/existing2.yaml"),
+      "/new-item": .value(OpenAPI.PathItem())
+    ]
+    
+    // Move the new item to index 0 in root group
+    let success = document.movePathToGroup("/new-item", groupPath: [], index: 0)
+    
+    // Verify the move was successful
+    #expect(success == true)
+    
+    // Verify the ordering in root group
+    let rootItems = Array(document.componentFiles?.pathItems?.items.keys ?? [])
+    #expect(rootItems.count == 3)
+    
+    // The new item should be at index 0
+    #expect(rootItems[0].contains("new-item") || rootItems[0].contains("new_item"))
+  }
 }

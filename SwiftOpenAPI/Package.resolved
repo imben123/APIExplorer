@@ -1,5 +1,5 @@
 {
-  "originHash" : "675d5c5f8f0b0edbe54a0edbaf9c6259aa261ed366d54a8387e4386eedf22c67",
+  "originHash" : "ddf241fe1ac144fe854f3433c80dfbc508c655761581139eb7cbdb3b2852710a",
   "pins" : [
     {
       "identity" : "swift-argument-parser",
@@ -25,7 +25,7 @@
       "location" : "https://github.com/imben123/SwiftToolbox",
       "state" : {
         "branch" : "main",
-        "revision" : "3a206bab71f32e0e7965979d88882df108efa10d"
+        "revision" : "aea5d7f51075d29bfa08fc69724bab38c246a694"
       }
     },
     {

@@ -32,8 +32,12 @@ private extension OpenAPI.Document {
   
   /// Serializes the document as a single file
   func serializeAsFile(configuration: FileDocument.WriteConfiguration) throws -> FileWrapper {
+    // Sort the paths before serialization to ensure consistent output
+    var sortedDocument = self
+    sortedDocument.sortDocumentPaths()
+    
     let format: SerializationFormat = configuration.contentType == .json ? .json : .yaml
-    let data = try serialize(format: format)
+    let data = try sortedDocument.serialize(format: format)
     
     // Check if we have stored hash and it matches the new serialized data
     if let originalHash = _originalDataHash.value,
@@ -53,15 +57,19 @@ private extension OpenAPI.Document {
   
   /// Serializes the document as a directory structure
   func serializeAsDirectory(configuration: FileDocument.WriteConfiguration) throws -> FileWrapper {
+    // Sort the paths before serialization to ensure consistent output
+    var sortedDocument = self
+    sortedDocument.sortDocumentPaths()
+    
     // Create directory wrapper
     let directoryWrapper = FileWrapper(directoryWithFileWrappers: [:])
     
     // Determine the main file format - prefer YAML for directories
     let mainFileName = "openapi.yaml"
-    let mainFileData = try serialize(format: .yaml)
+    let mainFileData = try sortedDocument.serialize(format: .yaml)
     
     // Check if we can reuse the existing main file
-    let finalMainFileData = getFinalMainFileData(
+    let finalMainFileData = sortedDocument.getFinalMainFileData(
       mainFileData: mainFileData,
       mainFileName: mainFileName,
       configuration: configuration
@@ -70,8 +78,8 @@ private extension OpenAPI.Document {
     directoryWrapper.addRegularFile(withContents: finalMainFileData, preferredFilename: mainFileName)
     
     // Add component files if available
-    if let componentFiles = componentFiles {
-      try addComponentFilesToDirectory(
+    if let componentFiles = sortedDocument.componentFiles {
+      try sortedDocument.addComponentFilesToDirectory(
         directoryWrapper: directoryWrapper,
         componentFiles: componentFiles,
         mainFileName: mainFileName,
@@ -80,8 +88,8 @@ private extension OpenAPI.Document {
     }
     
     // Add other files if available
-    if let otherFiles = otherFiles {
-      addOtherFilesToDirectory(
+    if let otherFiles = sortedDocument.otherFiles {
+      sortedDocument.addOtherFilesToDirectory(
         directoryWrapper: directoryWrapper,
         otherFiles: otherFiles,
         mainFileName: mainFileName

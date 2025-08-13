@@ -409,6 +409,16 @@ public extension OpenAPI {
 
           document.componentFiles = componentFiles
           document.otherFiles = otherFiles.isEmpty ? nil : otherFiles
+          
+          // Sort pathItems to match the order in document.paths
+          if let paths = document.paths, var pathItems = document.componentFiles?.pathItems {
+            pathItems.sortByPathOrder(pathOrder: paths)
+            document.componentFiles?.pathItems = pathItems
+          }
+          
+          // Re-sort document.paths in the specified order
+          document.sortDocumentPaths()
+          
           return document
         }
       }
