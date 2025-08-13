@@ -67,26 +67,6 @@ public extension OpenAPI {
       }
     }
 
-    /// Adds a path item at the specified path components
-    public mutating func addPathItem(_ item: Referenceable<PathItem>, at pathComponents: [String]) {
-      guard !pathComponents.isEmpty else { return }
-      
-      if pathComponents.count == 1 {
-        // Add to this group's items
-        items[pathComponents[0]] = item
-      } else {
-        // Add to a subgroup
-        let groupName = pathComponents[0]
-        let remainingPath = Array(pathComponents.dropFirst())
-
-        if groups[groupName] == nil {
-          groups[groupName] = PathGroup()
-        }
-        
-        groups[groupName]!.addPathItem(item, at: remainingPath)
-      }
-    }
-
     public mutating func addGroups(forPath path: String) {
       let normalizedPath = path.dropPrefix("./").dropPrefix("components/").dropPrefix("pathItems/").dropPrefix("paths/")
       let subdirectories = normalizedPath.split(separator: "/").map { String($0) }
@@ -109,6 +89,15 @@ public extension OpenAPI {
         return groups[groupName]!.getItem(in: subdirectories, filePath: filePath)
       }
       return items[filePath]
+    }
+
+    func getGroup(_ pathComponents: [String]) -> PathGroup? {
+      guard pathComponents.isEmpty else {
+        var pathComponents = pathComponents
+        let groupName = pathComponents.removeFirst()
+        return groups[groupName]!.getGroup(pathComponents)
+      }
+      return self
     }
 
     mutating func updateItem(in subdirectories: [String], filePath: String, updatedItem: Referenceable<PathItem>?) {
