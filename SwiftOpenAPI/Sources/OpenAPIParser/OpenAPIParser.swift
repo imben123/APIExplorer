@@ -94,17 +94,5 @@ struct ListPaths: ParsableCommand {
     } else {
       print("No paths found in the specification.")
     }
-    
-    // Also check componentFiles for external path items
-    if let componentFiles = document.componentFiles,
-       let pathItems = componentFiles.pathItems,
-       !pathItems.isEmpty {
-      print("\nExternal Path Items (in componentFiles):")
-      let sortedPaths = pathItems.keys.sorted()
-      for path in sortedPaths {
-        print("  \(path)")
-      }
-      print("Total external path items: \(pathItems.count)")
-    }
   }
 }

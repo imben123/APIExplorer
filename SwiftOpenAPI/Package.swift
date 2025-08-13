@@ -9,8 +9,7 @@ let package = Package(
   ],
   products: [
     .library(name: "SwiftOpenAPI", targets: ["SwiftOpenAPI"]),
-    .executable(name: "open-api-parser", targets: ["OpenAPIParser"]),
-    .executable(name: "test-ordered-dict", targets: ["TestOrderedDict"])
+    .executable(name: "open-api-parser", targets: ["OpenAPIParser"])
   ],
   dependencies: [
     .package(url: "https://github.com/imben123/SwiftToolbox", branch: "main"),
@@ -31,20 +30,10 @@ let package = Package(
         .product(name: "ArgumentParser", package: "swift-argument-parser")
       ]
     ),
-    .executableTarget(
-      name: "TestOrderedDict",
-      dependencies: [
-        "SwiftOpenAPI",
-        "SwiftToolbox",
-        "Yams",
-        .product(name: "Collections", package: "swift-collections")
-      ]
-    ),
     .testTarget(name: "SwiftOpenAPITests", dependencies: [
       "SwiftOpenAPI"
     ], resources: [
-      .copy("comprehensive-openapi.yaml"),
-      .copy("comprehensive-openapi.json")
+      .copy("Resources/")
     ]),
   ]
 )

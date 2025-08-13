@@ -54,7 +54,7 @@ public extension OpenAPI {
       return result
     }
 
-    subscript(ref: String) -> Referenceable<PathItem>? {
+    public subscript(ref: String) -> Referenceable<PathItem>? {
       get {
         let normalizedRef = ref.dropPrefix("./").dropPrefix("components/").dropPrefix("pathItems/").dropPrefix("paths/")
         let subdirectories = normalizedRef.split(separator: "/").dropLast().map { String($0) }

@@ -5,7 +5,7 @@ import Foundation
 @Test func yamlParsingTest() async throws {
   // Load the comprehensive YAML fixture
   let bundle = Bundle.module
-  guard let yamlURL = bundle.url(forResource: "comprehensive-openapi", withExtension: "yaml") else {
+  guard let yamlURL = bundle.url(forResource: "Resources/comprehensive-openapi", withExtension: "yaml") else {
     throw TestError.fixtureNotFound
   }
   
@@ -23,7 +23,7 @@ import Foundation
 @Test func jsonParsingTest() async throws {
   // Load the comprehensive JSON fixture
   let bundle = Bundle.module
-  guard let jsonURL = bundle.url(forResource: "comprehensive-openapi", withExtension: "json") else {
+  guard let jsonURL = bundle.url(forResource: "Resources/comprehensive-openapi", withExtension: "json") else {
     throw TestError.fixtureNotFound
   }
   

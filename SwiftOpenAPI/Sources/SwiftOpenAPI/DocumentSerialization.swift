@@ -124,7 +124,17 @@ private extension OpenAPI.Document {
     addComponentFiles(componentFiles.securitySchemes?.compactMapValues({ $0.value }), to: directoryWrapper, mainFileName: mainFileName, configuration: configuration)
     addComponentFiles(componentFiles.links?.compactMapValues({ $0.value }), to: directoryWrapper, mainFileName: mainFileName, configuration: configuration)
     addComponentFiles(componentFiles.callbacks?.compactMapValues({ $0.value }), to: directoryWrapper, mainFileName: mainFileName, configuration: configuration)
-    addPathItemFiles(componentFiles.pathItems, to: directoryWrapper, mainFileName: mainFileName, configuration: configuration)
+
+    if let rootGroup = componentFiles.pathItems {
+      // Recursively add path items from the group structure
+      addPathItemsFromGroup(
+        rootGroup,
+        to: directoryWrapper,
+        basePath: [],
+        mainFileName: mainFileName,
+        configuration: configuration
+      )
+    }
   }
   
   /// Adds component files of a specific type to the directory
@@ -166,25 +176,6 @@ private extension OpenAPI.Document {
     }
   }
   
-  /// Adds path item files to the directory
-  func addPathItemFiles(
-    _ pathGroup: OpenAPI.PathGroup?,
-    to directoryWrapper: FileWrapper,
-    mainFileName: String,
-    configuration: FileDocument.WriteConfiguration
-  ) {
-    guard let pathGroup = pathGroup else { return }
-    
-    // Recursively add path items from the group structure
-    addPathItemsFromGroup(
-      pathGroup,
-      to: directoryWrapper,
-      basePath: ["paths"],
-      mainFileName: mainFileName,
-      configuration: configuration
-    )
-  }
-  
   /// Recursively adds path items from a PathGroup
   func addPathItemsFromGroup(
     _ group: OpenAPI.PathGroup,
@@ -194,9 +185,9 @@ private extension OpenAPI.Document {
     configuration: FileDocument.WriteConfiguration
   ) {
     // Add items directly in this group
-    for (fileName, referenceablePathItem) in group.items {
+    for (filePath, referenceablePathItem) in group.items {
       // Skip the main OpenAPI file to avoid duplication
-      if fileName == mainFileName {
+      if filePath == mainFileName {
         continue
       }
 
@@ -209,9 +200,9 @@ private extension OpenAPI.Document {
       encoder.orderedDictionaryCodingStrategy = .keyedContainer
       let newData = try! encoder.encode(pathItem).data(using: .utf8)!
 
-      // Build full path components
-      let pathComponents = basePath + [fileName]
-      let actualFilePath = pathComponents.joined(separator: "/")
+      // The filePath is already the full path (e.g., "paths/group1/penguin.yaml")
+      // We just need to use it directly
+      let actualFilePath = filePath
 
       // Check if PathItem has an originalDataHash for change detection
       let finalData: Data
@@ -226,7 +217,7 @@ private extension OpenAPI.Document {
 
       addFileToDirectoryStructure(
         data: finalData,
-        pathComponents: pathComponents,
+        filePath: actualFilePath,
         to: directoryWrapper
       )
     }
@@ -234,6 +225,14 @@ private extension OpenAPI.Document {
     // Recursively add items from subgroups
     for (groupName, subgroup) in group.groups {
       let newBasePath = basePath + [groupName]
+      
+      // Create empty directory if the group has no items but exists
+      if subgroup.items.isEmpty && !subgroup.groups.isEmpty {
+        // Create the directory structure for empty groups
+        let dirPath = newBasePath.joined(separator: "/")
+        createEmptyDirectoryStructure(dirPath: dirPath, to: directoryWrapper)
+      }
+      
       addPathItemsFromGroup(
         subgroup,
         to: directoryWrapper,
@@ -241,6 +240,23 @@ private extension OpenAPI.Document {
         mainFileName: mainFileName,
         configuration: configuration
       )
+    }
+  }
+  
+  /// Creates an empty directory structure
+  func createEmptyDirectoryStructure(dirPath: String, to directoryWrapper: FileWrapper) {
+    let pathComponents = dirPath.split(separator: "/").map(String.init)
+    var currentWrapper = directoryWrapper
+    
+    for pathComponent in pathComponents {
+      if let existingDir = currentWrapper.fileWrappers?[pathComponent] {
+        currentWrapper = existingDir
+      } else {
+        let newDir = FileWrapper(directoryWithFileWrappers: [:])
+        newDir.preferredFilename = pathComponent
+        currentWrapper.addFileWrapper(newDir)
+        currentWrapper = newDir
+      }
     }
   }
   

@@ -58,16 +58,18 @@ struct PathGroupListItem: View {
     // Directory contents (if expanded)
     if isExpanded {
       ForEach(group.items.keys, id: \.self) { filePath in
-        PathItemSection(path: document.path(for: filePath)!,
-                        pathItem: document[filePath: filePath],
-                        indentLevel: indentLevel + 1,
-                        onDeleteOperation: onDeleteOperation)
+        if let path = document.path(for: filePath) {
+          PathItemSection(path: path,
+                          pathItem: document[filePath: filePath],
+                          indentLevel: indentLevel + 1,
+                          onDeleteOperation: onDeleteOperation)
+        }
       }
 
       ForEach(group.groups.keys, id: \.self) { groupName in
         PathGroupListItem(name: groupName,
                           group: group.groups[groupName]!,
-                          pathPrefix: "\(pathPrefix)/\(name)",
+                          pathPrefix: pathPrefix.isEmpty ? name : "\(pathPrefix)/\(name)",
                           indentLevel: indentLevel + 1,
                           document: $document,
                           onDeleteOperation: onDeleteOperation)
@@ -98,14 +100,20 @@ struct PathGroupListItem: View {
     }
     
     // Build the path components for the group hierarchy
-    let filePath = pathPrefix.split(separator: "/").map(String.init) + [name, "\(newPath).yaml"]
+    // pathPrefix contains parent groups separated by "/", we need to add current group name
+    let pathComponents = pathPrefix.isEmpty ? [name] : pathPrefix.split(separator: "/").map(String.init) + [name]
+    
+    // Add the file name to the path components
+    let fileName = "\(newPath).yaml"
+    let fullPathComponents = ["paths"] + pathComponents + [fileName]
 
-    // Add the path item to the appropriate group
-    document.componentFiles!.pathItems!.addPathItem(.value(newPathItem), at: filePath)
+    // Use the subscript to add the path item to the correct nested group
+    let filePath = fullPathComponents.joined(separator: "/")
+    document.componentFiles!.pathItems![filePath] = .value(newPathItem)
 
     // Also add a reference to it in document.paths
     var paths = document.paths ?? [:]
-    paths[newPath] = .reference("./paths/\(filePath.joined(separator: "/"))")
+    paths["/\(newPath)"] = .reference("./\(filePath)")
     document.paths = paths
   }
   
@@ -124,7 +132,7 @@ struct PathGroupListItem: View {
     while existingPathsInGroup.contains("\(basePath)\(counter)") {
       counter += 1
     }
-    return "/\(basePath)\(counter)"
+    return "\(basePath)\(counter)"
   }
   
   private func getAllPathsInGroup() -> Set<String> {
