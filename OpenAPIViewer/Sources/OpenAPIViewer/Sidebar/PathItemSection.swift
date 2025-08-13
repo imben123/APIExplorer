@@ -13,7 +13,7 @@ struct PathItemSection: View {
   let pathItem: OpenAPI.PathItem
   let indentLevel: Int
   let onDeleteOperation: (String, HTTPMethod) -> Void
-  
+
   private var lastOperation: HTTPMethod? {
     // Check operations in reverse order to find the last one present
     if pathItem.trace != nil { return .trace }
@@ -31,36 +31,52 @@ struct PathItemSection: View {
     Group {
       if let get = pathItem.get {
         OperationRow(method: .get, path: path, operation: get, indentLevel: indentLevel, onDelete: onDeleteOperation)
+          .operationItemDraggable(path, operation: .get)
           .padding(.bottom, lastOperation == .get ? 4 : 0)
       }
       if let post = pathItem.post {
         OperationRow(method: .post, path: path, operation: post, indentLevel: indentLevel, onDelete: onDeleteOperation)
+          .operationItemDraggable(path, operation: .post)
           .padding(.bottom, lastOperation == .post ? 4 : 0)
       }
       if let put = pathItem.put {
         OperationRow(method: .put, path: path, operation: put, indentLevel: indentLevel, onDelete: onDeleteOperation)
+          .operationItemDraggable(path, operation: .put)
           .padding(.bottom, lastOperation == .put ? 4 : 0)
       }
       if let delete = pathItem.delete {
         OperationRow(method: .delete, path: path, operation: delete, indentLevel: indentLevel, onDelete: onDeleteOperation)
+          .operationItemDraggable(path, operation: .delete)
           .padding(.bottom, lastOperation == .delete ? 4 : 0)
       }
       if let patch = pathItem.patch {
         OperationRow(method: .patch, path: path, operation: patch, indentLevel: indentLevel, onDelete: onDeleteOperation)
+          .operationItemDraggable(path, operation: .patch)
           .padding(.bottom, lastOperation == .patch ? 4 : 0)
       }
       if let head = pathItem.head {
         OperationRow(method: .head, path: path, operation: head, indentLevel: indentLevel, onDelete: onDeleteOperation)
+          .operationItemDraggable(path, operation: .head)
           .padding(.bottom, lastOperation == .head ? 4 : 0)
       }
       if let options = pathItem.options {
         OperationRow(method: .options, path: path, operation: options, indentLevel: indentLevel, onDelete: onDeleteOperation)
+          .operationItemDraggable(path, operation: .options)
           .padding(.bottom, lastOperation == .options ? 4 : 0)
       }
       if let trace = pathItem.trace {
         OperationRow(method: .trace, path: path, operation: trace, indentLevel: indentLevel, onDelete: onDeleteOperation)
+          .operationItemDraggable(path, operation: .trace)
           .padding(.bottom, lastOperation == .trace ? 4 : 0)
       }
+    }
+  }
+}
+
+private extension View {
+  func operationItemDraggable(_ path: String, operation: HTTPMethod) -> some View {
+    self.draggable(OperationDragItem(path: path, operation: operation)) {
+      self
     }
   }
 }

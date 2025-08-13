@@ -16,6 +16,7 @@ struct PathsList: View {
   @Binding var selectedOperation: HTTPMethod?
   @State private var collapsedDirectories: Set<String> = []
   @State private var showingDeleteConfirmation = false
+  @State private var isRootDropTargeted = false
   @FocusState private var isListFocused: Bool
   @Environment(\.editMode) private var isEditMode
   
@@ -54,13 +55,36 @@ struct PathsList: View {
         if document.paths?.isEmpty != false {
           EmptyPathsView()
         } else {
-          ForEach(document.ungroupedPathItems, id: \.self) { path in
-            PathItemSection(
-              path: path,
-              pathItem: document[path: path],
-              indentLevel: 0,
-              onDeleteOperation: deleteOperation
-            )
+          // Root level paths section with drop support
+          VStack(spacing: 0) {
+            if !document.ungroupedPathItems.isEmpty || isRootDropTargeted {
+              VStack(spacing: 0) {
+                ForEach(document.ungroupedPathItems, id: \.self) { path in
+                  PathItemSection(
+                    path: path,
+                    pathItem: document[path: path],
+                    indentLevel: 0,
+                    onDeleteOperation: deleteOperation
+                  )
+                }
+                if isRootDropTargeted && document.ungroupedPathItems.isEmpty {
+                  HStack {
+                    Text("Drop here to move to root")
+                      .font(.caption)
+                      .foregroundColor(.secondary)
+                    Spacer()
+                  }
+                  .padding(.horizontal)
+                  .padding(.vertical, 8)
+                }
+              }
+              .background(isRootDropTargeted ? Color.blue.opacity(0.1) : Color.clear)
+              .dropDestination(for: OperationDragItem.self) { items, location in
+                handleRootDrop(items: items)
+              } isTargeted: { isTargeted in
+                isRootDropTargeted = isTargeted
+              }
+            }
           }
 
           ForEach(document.groupedPathItems.keys, id: \.self) { groupName in
@@ -103,6 +127,15 @@ struct PathsList: View {
     selectedOperation = .get
   }
   
+  private func handleRootDrop(items: [OperationDragItem]) -> Bool {
+    guard let draggedItem = items.first else { return false }
+
+    // Move the path to root (empty group path)
+    document.movePathToGroup(draggedItem.path, groupPath: [])
+
+    return true
+  }
+
   private func deleteOperation(path: String, operation: HTTPMethod) {
     // Clear selection first if it matches what we're deleting
     if selectedPath == path && selectedOperation == operation {
