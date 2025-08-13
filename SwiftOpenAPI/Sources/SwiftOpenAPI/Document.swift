@@ -52,7 +52,13 @@ public extension OpenAPI {
     
     /// SHA256 hash of the original serialized data for change detection.
     /// This property is excluded from Codable to prevent it from being serialized.
-    public var originalDataHash: String?
+    /// Wrapped in Box to allow mutation during serialization.
+    internal var _originalDataHash: Box<String?> = Box(nil)
+    
+    public var originalDataHash: String? {
+      get { _originalDataHash.value }
+      set { _originalDataHash.value = newValue }
+    }
     
     /// A dictionary of other files that are not part of the OpenAPI specification.
     /// Keyed by file path relative to the root directory, storing unparsed file data.
@@ -131,7 +137,6 @@ public extension OpenAPI {
       self.tags = tags
       self.externalDocs = externalDocs
       self.componentFiles = nil
-      self.originalDataHash = nil
       self.otherFiles = nil
     }
     
@@ -149,9 +154,8 @@ public extension OpenAPI {
       tags = try container.decodeIfPresent([Tag].self, forKey: .tags)
       externalDocs = try container.decodeIfPresent(ExternalDocumentation.self, forKey: .externalDocs)
       
-      // componentFiles, originalDataHash, and otherFiles are not decoded from the specification data
+      // componentFiles, and otherFiles are not decoded from the specification data
       componentFiles = nil
-      originalDataHash = nil
       otherFiles = nil
     }
     

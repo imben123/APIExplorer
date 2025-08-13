@@ -12,7 +12,7 @@ struct PathItemSection: View {
   let path: String
   let pathItem: OpenAPI.PathItem
   let indentLevel: Int
-  let onDeleteOperation: (String, String) -> Void
+  let onDeleteOperation: (String, HTTPMethod) -> Void
   
   private var lastOperation: HTTPMethod? {
     // Check operations in reverse order to find the last one present

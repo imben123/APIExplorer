@@ -14,7 +14,7 @@ public struct OpenAPIDocumentView: View {
   @Binding var document: OpenAPI.Document
   
   @State private var selectedPath: String?
-  @State private var selectedOperation: String?
+  @State private var selectedOperation: HTTPMethod?
   @State private var isEditMode: Bool = false
 
   @State private var selectedServer: String = "/"
@@ -42,12 +42,11 @@ public struct OpenAPIDocumentView: View {
     }, detail: {
       // Main content area
       if let selectedPath = selectedPath,
-         let selectedOperation = selectedOperation,
-         let httpMethod = HTTPMethod(rawValue: selectedOperation) {
+         let selectedOperation = selectedOperation {
         
         OperationDetailView(
           path: selectedPath,
-          operation: httpMethod,
+          operation: selectedOperation,
           document: $document
         )
       } else {

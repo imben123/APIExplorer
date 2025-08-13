@@ -22,7 +22,8 @@
       "Bash(grep:*)",
       "Bash(true)",
       "Bash(rmdir:*)",
-      "Bash(git worktree:*)"
+      "Bash(git worktree:*)",
+      "Bash(cat:*)"
     ],
     "deny": []
   }

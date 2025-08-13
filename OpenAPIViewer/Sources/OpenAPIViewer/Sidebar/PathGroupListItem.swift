@@ -16,7 +16,7 @@ struct PathGroupListItem: View {
   var pathPrefix: String = ""
   var indentLevel: Int = 0
   @Binding var document: OpenAPI.Document
-  let onDeleteOperation: (String, String) -> Void
+  let onDeleteOperation: (String, HTTPMethod) -> Void
 
   @State private var isExpanded: Bool = true
   @Environment(\.editMode) private var isEditMode

@@ -13,8 +13,8 @@ struct OperationRow: View {
   let path: String
   let operation: OpenAPI.Operation
   let indentLevel: Int
-  let onDelete: (String, String) -> Void
-  
+  let onDelete: (String, HTTPMethod) -> Void
+
   private var methodColor: Color {
     switch method {
     case .get: return .blue
@@ -49,7 +49,7 @@ struct OperationRow: View {
     .tag("\(path)|\(method.rawValue)")
     .contextMenu {
       Button("Delete Operation", role: .destructive) {
-        onDelete(path, method.rawValue)
+        onDelete(path, method)
       }
     }
   }

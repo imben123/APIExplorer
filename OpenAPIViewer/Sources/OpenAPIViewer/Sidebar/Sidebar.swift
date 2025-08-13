@@ -13,7 +13,7 @@ import SwiftToolbox
 struct Sidebar: View {
   @Binding var document: OpenAPI.Document
   @Binding var selectedPath: String?
-  @Binding var selectedOperation: String?
+  @Binding var selectedOperation: HTTPMethod?
   @Binding var selectedServer: String
   @Binding var serverVariableValues: OrderedDictionary<String, String>
 

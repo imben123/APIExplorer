@@ -10,7 +10,7 @@ import Collections
 
 public extension OpenAPI.Document {
   mutating func addPath(_ path: String,
-                        toGroup pathComponents: [String],
+                        toGroup pathComponents: [String] = [],
                         pathItem: OpenAPI.PathItem = placeholderPathItem()) {
     // Ensure componentFiles exists
     if componentFiles == nil {

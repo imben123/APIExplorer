@@ -8,6 +8,7 @@
 import Foundation
 import Collections
 import SwiftUI
+import SwiftToolbox
 import Yams
 
 public extension OpenAPI.Document {
@@ -35,13 +36,16 @@ private extension OpenAPI.Document {
     let data = try serialize(format: format)
     
     // Check if we have stored hash and it matches the new serialized data
-    if let originalHash = originalDataHash,
+    if let originalHash = _originalDataHash.value,
        data.calculateHash() == originalHash,
        let existingFile = configuration.existingFile,
        !existingFile.isDirectory,
        let originalData = existingFile.regularFileContents {
       // Content hasn't changed semantically, return original data to preserve formatting
       return FileWrapper(regularFileWithContents: originalData)
+    } else {
+      // Content has changed, update the hash
+      _originalDataHash.value = data.calculateHash()
     }
     
     return FileWrapper(regularFileWithContents: data)
@@ -93,7 +97,7 @@ private extension OpenAPI.Document {
     mainFileName: String,
     configuration: FileDocument.WriteConfiguration
   ) -> Data {
-    if let originalHash = originalDataHash,
+    if let originalHash = _originalDataHash.value,
        mainFileData.calculateHash() == originalHash,
        let existingFile = configuration.existingFile,
        existingFile.isDirectory,
@@ -102,6 +106,8 @@ private extension OpenAPI.Document {
       // Main file hasn't changed semantically, reuse original data to preserve formatting
       return existingMainData
     } else {
+      // Content has changed, update the hash
+      _originalDataHash.value = mainFileData.calculateHash()
       return mainFileData
     }
   }
