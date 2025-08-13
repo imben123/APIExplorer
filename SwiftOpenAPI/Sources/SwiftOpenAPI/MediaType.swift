@@ -15,8 +15,8 @@ public extension OpenAPI {
     public let schema: Referenceable<Schema>?
     
     /// Example of the media type.
-    public var example: OrderedJSONObject?
-    
+    public var example: OrderedJSONValue?
+
     /// Examples of the media type.
     public var examples: OrderedDictionary<String, Referenceable<Example>>?
     
@@ -25,7 +25,7 @@ public extension OpenAPI {
     
     public init(
       schema: Referenceable<Schema>? = nil,
-      example: OrderedJSONObject? = nil,
+      example: OrderedJSONValue? = nil,
       examples: OrderedDictionary<String, Referenceable<Example>>? = nil,
       encoding: OrderedDictionary<String, Encoding>? = nil
     ) {

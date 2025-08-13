@@ -19,7 +19,7 @@ struct ResponseExampleContentView: View {
         VStack(alignment: .leading, spacing: 8) {
           // Show single example if available
           if let example = mediaType.example {
-            JSONView(json: .object(example))
+            JSONView(json: example)
               .padding(12)
           }
           // Show named examples if available
@@ -38,7 +38,7 @@ struct ResponseExampleContentView: View {
                       .font(.caption.bold())
                       .foregroundColor(.primary)
                   }
-                  JSONView(json: .object(value))
+                  JSONView(json: value)
                     .padding(12)
                 }
                 .padding(12)

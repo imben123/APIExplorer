@@ -10,8 +10,8 @@ import SwiftToolbox
 import RichTextView
 import AppToolbox
 
-struct EditableJSONObjectView: View {
-  @Binding var json: OrderedJSONObject
+struct EditableJSONValueView: View {
+  @Binding var json: OrderedJSONValue
   @State private var isEditing = false
   @State private var jsonText = ""
   @State private var hasError = false
@@ -35,7 +35,7 @@ struct EditableJSONObjectView: View {
         .buttonStyle(.borderedProminent)
       }
     } else {
-      JSONView(json: .object(json))
+      JSONView(json: json)
         .onTapGesture(count: 2) {
           startEditing()
         }
@@ -43,7 +43,7 @@ struct EditableJSONObjectView: View {
   }
   
   private func startEditing() {
-    jsonText = prettyPrintJSON(.object(json))
+    jsonText = prettyPrintJSON(json)
     isEditing = true
     hasError = false
   }
@@ -57,13 +57,9 @@ struct EditableJSONObjectView: View {
     do {
       let decoder = OrderedJSONDecoder()
       let parsed = try decoder.decode(OrderedJSONValue.self, from: data)
-      if case .object(let obj) = parsed {
-        json = obj
-        isEditing = false
-        hasError = false
-      } else {
-        hasError = true
-      }
+      json = parsed
+      isEditing = false
+      hasError = false
     } catch {
       hasError = true
     }

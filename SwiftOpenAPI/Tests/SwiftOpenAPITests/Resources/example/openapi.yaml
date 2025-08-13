@@ -1,0 +1,22 @@
+openapi: 3.1.1
+info:
+  title: Blackwell Data API
+  version: 1.0.0
+servers:
+- url: http://localhost:3000
+  description: Localhost
+- url: https://staging.data.fora.health
+  description: Staging
+- url: https://demo.data.fora.health
+  description: Demo
+- url: https://data.fora.health
+  description: Production
+paths:
+  /:
+    $ref: ./paths/healthcheck.yaml
+  /penguin:
+    $ref: ./paths/group1/penguin.yaml
+  /hippo:
+    $ref: ./paths/group2/hippo.yaml
+  /penguin/nested:
+    $ref: ./paths/group1/nested/nested.yaml

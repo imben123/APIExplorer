@@ -359,7 +359,7 @@ struct RequestBodyExampleContentView: View {
                       .foregroundColor(.primary)
                   }
                 }
-                EditableJSONObjectView(json: Binding(
+                EditableJSONValueView(json: Binding(
                   get: { value },
                   set: { newValue in
                     updateValue(for: exampleKey, value: newValue)
@@ -387,7 +387,7 @@ struct RequestBodyExampleContentView: View {
   private func onAddExample() {
     if mediaType.example == nil && mediaType.examples == nil {
       // No examples yet, add a single example
-      mediaType.example = [:]
+      mediaType.example = .object([:])
     } else if mediaType.example != nil && mediaType.examples == nil {
       // Has single example, convert to examples
       let existingExample = mediaType.example
@@ -395,13 +395,13 @@ struct RequestBodyExampleContentView: View {
 
       var examples = OrderedDictionary<String, OpenAPI.Referenceable<OpenAPI.Example>>()
       examples["Example 1"] = .value(OpenAPI.Example(value: existingExample))
-      examples["Example 2"] = .value(OpenAPI.Example(value: [:]))
+      examples["Example 2"] = .value(OpenAPI.Example(value: .object([:])))
       mediaType.examples = examples
     } else if let existingExamples = mediaType.examples {
       // Already has examples, add another
       var examples = existingExamples
       let nextIndex = examples.count + 1
-      examples["Example \(nextIndex)"] = .value(OpenAPI.Example(value: [:]))
+      examples["Example \(nextIndex)"] = .value(OpenAPI.Example(value: .object([:])))
       mediaType.examples = examples
     }
   }
@@ -427,7 +427,7 @@ struct RequestBodyExampleContentView: View {
     examples.removeValue(forKey: key)
   }
 
-  private func updateValue(for key: String, value: OrderedJSONObject) {
+  private func updateValue(for key: String, value: OrderedJSONValue) {
     guard var example = examples[key]?.resolve(in: document) else {
       return
     }

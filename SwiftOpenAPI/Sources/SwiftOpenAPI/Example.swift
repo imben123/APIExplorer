@@ -17,8 +17,8 @@ public extension OpenAPI {
     public let description: String?
     
     /// Embedded literal example.
-    public var value: OrderedJSONObject?
-    
+    public var value: OrderedJSONValue?
+
     /// A URI that points to the literal example.
     public let externalValue: String?
 
@@ -27,7 +27,7 @@ public extension OpenAPI {
     public init(
       summary: String? = nil,
       description: String? = nil,
-      value: OrderedJSONObject? = nil,
+      value: OrderedJSONValue? = nil,
       externalValue: String? = nil
     ) {
       self.summary = summary
