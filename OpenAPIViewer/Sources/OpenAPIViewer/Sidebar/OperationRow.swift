@@ -15,6 +15,7 @@ struct OperationRow: View {
   let indentLevel: Int
   let onDelete: (String, HTTPMethod) -> Void
   let includeDropIndicator: Bool
+  var includeRootDropDestination: Bool = false
 
   private var methodColor: Color {
     switch method {
@@ -29,6 +30,10 @@ struct OperationRow: View {
   
   var body: some View {
     VStack(spacing: 0) {
+      if includeRootDropDestination {
+        DropIndicatorLine(spaceBelow: true)
+      }
+      
       HStack(spacing: 8) {
         // HTTP method badge
         Text(method.rawValue)
@@ -49,10 +54,7 @@ struct OperationRow: View {
       .padding(.vertical, 3)
 
       if includeDropIndicator {
-        // Drop destination below this path item
-        Rectangle()
-          .fill(Color.blue.opacity(0.3))
-          .frame(height: 2)
+        DropIndicatorLine()
       }
     }
     .padding(.leading, CGFloat(indentLevel * 8))
@@ -62,5 +64,17 @@ struct OperationRow: View {
         onDelete(path, method)
       }
     }
+  }
+}
+
+struct DropIndicatorLine: View {
+
+  var spaceBelow: Bool = false
+
+  var body: some View {
+    Rectangle()
+      .fill(Color.blue.opacity(0.5))
+      .frame(height: 2)
+      .padding(spaceBelow ? .top : .bottom, -2)
   }
 }

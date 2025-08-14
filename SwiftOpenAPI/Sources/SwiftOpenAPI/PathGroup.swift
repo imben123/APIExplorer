@@ -195,26 +195,40 @@ public extension OpenAPI {
     mutating func moveItem(filePath: String, toIndex: Int) {
       guard let item = items[filePath] else { return }
       
+      // Find the current index of the item
+      let itemsArray = Array(items)
+      guard let currentIndex = itemsArray.firstIndex(where: { $0.key == filePath }) else { return }
+      
       // Remove the item from its current position
       items.removeValue(forKey: filePath)
       
-      // Clamp the target index to valid range
-      let itemsArray = Array(items)
-      let clampedIndex = max(0, min(toIndex, itemsArray.count))
+      // Calculate the actual insertion index after removal
+      let itemsArrayAfterRemoval = Array(items)
+      let actualInsertionIndex: Int
+      
+      if toIndex > currentIndex {
+        // Moving forward: the target index shifts down by 1 due to removal
+        actualInsertionIndex = max(0, min(toIndex - 1, itemsArrayAfterRemoval.count))
+      } else {
+        // Moving backward: the target index remains the same
+        actualInsertionIndex = max(0, min(toIndex, itemsArrayAfterRemoval.count))
+      }
       
       // Rebuild the ordered dictionary with the item at the new position
       var newItems = OrderedDictionary<String, Referenceable<PathItem>>()
+      var itemInserted = false
       
-      for (index, (key, value)) in itemsArray.enumerated() {
-        if index == clampedIndex {
+      for (index, (key, value)) in itemsArrayAfterRemoval.enumerated() {
+        if index == actualInsertionIndex && !itemInserted {
           // Insert the moved item at this position
           newItems[filePath] = item
+          itemInserted = true
         }
         newItems[key] = value
       }
       
       // If the target index is at or beyond the end, append the item
-      if clampedIndex >= itemsArray.count {
+      if !itemInserted {
         newItems[filePath] = item
       }
       
@@ -228,26 +242,40 @@ public extension OpenAPI {
     mutating func moveGroup(groupName: String, toIndex: Int) {
       guard let group = groups[groupName] else { return }
       
+      // Find the current index of the group
+      let groupsArray = Array(groups)
+      guard let currentIndex = groupsArray.firstIndex(where: { $0.key == groupName }) else { return }
+      
       // Remove the group from its current position
       groups.removeValue(forKey: groupName)
       
-      // Clamp the target index to valid range
-      let groupsArray = Array(groups)
-      let clampedIndex = max(0, min(toIndex, groupsArray.count))
+      // Calculate the actual insertion index after removal
+      let groupsArrayAfterRemoval = Array(groups)
+      let actualInsertionIndex: Int
+      
+      if toIndex > currentIndex {
+        // Moving forward: the target index shifts down by 1 due to removal
+        actualInsertionIndex = max(0, min(toIndex - 1, groupsArrayAfterRemoval.count))
+      } else {
+        // Moving backward: the target index remains the same
+        actualInsertionIndex = max(0, min(toIndex, groupsArrayAfterRemoval.count))
+      }
       
       // Rebuild the ordered dictionary with the group at the new position
       var newGroups = OrderedDictionary<String, PathGroup>()
+      var groupInserted = false
       
-      for (index, (key, value)) in groupsArray.enumerated() {
-        if index == clampedIndex {
+      for (index, (key, value)) in groupsArrayAfterRemoval.enumerated() {
+        if index == actualInsertionIndex && !groupInserted {
           // Insert the moved group at this position
           newGroups[groupName] = group
+          groupInserted = true
         }
         newGroups[key] = value
       }
       
       // If the target index is at or beyond the end, append the group
-      if clampedIndex >= groupsArray.count {
+      if !groupInserted {
         newGroups[groupName] = group
       }
       

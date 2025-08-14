@@ -16,6 +16,7 @@ struct PathItemSection: View {
   @Binding var document: OpenAPI.Document
   var groupPath: [String] = []
   var indexInGroup: Int = 0
+  var includeRootDropIndicator: Bool = false
 
   @State private var isDropTargeted: Bool = false
 
@@ -39,11 +40,12 @@ struct PathItemSection: View {
                    operation: get,
                    indentLevel: indentLevel,
                    onDelete: onDeleteOperation,
-                   includeDropIndicator: lastOperation == .get && isDropTargeted)
+                   includeDropIndicator: lastOperation == .get && isDropTargeted,
+                   includeRootDropDestination: includeRootDropIndicator)
         .operationItemDraggable(path, operation: .get)
         .padding(.bottom, lastOperation == .get ? 4 : 0)
         .dropDestination(for: OperationDragItem.self) { items, location in
-          handleDrop(items: items)
+          handleDrop(items: items, atIndex: indexInGroup + 1)
         } isTargeted: { isTargeted in
           isDropTargeted = isTargeted
         }
@@ -58,7 +60,7 @@ struct PathItemSection: View {
         .operationItemDraggable(path, operation: .post)
         .padding(.bottom, lastOperation == .post ? 4 : 0)
         .dropDestination(for: OperationDragItem.self) { items, location in
-          handleDrop(items: items)
+          handleDrop(items: items, atIndex: indexInGroup + 1)
         } isTargeted: { isTargeted in
           isDropTargeted = isTargeted
         }
@@ -73,7 +75,7 @@ struct PathItemSection: View {
         .operationItemDraggable(path, operation: .put)
         .padding(.bottom, lastOperation == .put ? 4 : 0)
         .dropDestination(for: OperationDragItem.self) { items, location in
-          handleDrop(items: items)
+          handleDrop(items: items, atIndex: indexInGroup + 1)
         } isTargeted: { isTargeted in
           isDropTargeted = isTargeted
         }
@@ -88,7 +90,7 @@ struct PathItemSection: View {
         .operationItemDraggable(path, operation: .delete)
         .padding(.bottom, lastOperation == .delete ? 4 : 0)
         .dropDestination(for: OperationDragItem.self) { items, location in
-          handleDrop(items: items)
+          handleDrop(items: items, atIndex: indexInGroup + 1)
         } isTargeted: { isTargeted in
           isDropTargeted = isTargeted
         }
@@ -103,7 +105,7 @@ struct PathItemSection: View {
         .operationItemDraggable(path, operation: .patch)
         .padding(.bottom, lastOperation == .patch ? 4 : 0)
         .dropDestination(for: OperationDragItem.self) { items, location in
-          handleDrop(items: items)
+          handleDrop(items: items, atIndex: indexInGroup + 1)
         } isTargeted: { isTargeted in
           isDropTargeted = isTargeted
         }
@@ -118,7 +120,7 @@ struct PathItemSection: View {
         .operationItemDraggable(path, operation: .head)
         .padding(.bottom, lastOperation == .head ? 4 : 0)
         .dropDestination(for: OperationDragItem.self) { items, location in
-          handleDrop(items: items)
+          handleDrop(items: items, atIndex: indexInGroup + 1)
         } isTargeted: { isTargeted in
           isDropTargeted = isTargeted
         }
@@ -133,7 +135,7 @@ struct PathItemSection: View {
         .operationItemDraggable(path, operation: .options)
         .padding(.bottom, lastOperation == .options ? 4 : 0)
         .dropDestination(for: OperationDragItem.self) { items, location in
-          handleDrop(items: items)
+          handleDrop(items: items, atIndex: indexInGroup + 1)
         } isTargeted: { isTargeted in
           isDropTargeted = isTargeted
         }
@@ -148,28 +150,28 @@ struct PathItemSection: View {
         .operationItemDraggable(path, operation: .trace)
         .padding(.bottom, lastOperation == .trace ? 4 : 0)
         .dropDestination(for: OperationDragItem.self) { items, location in
-          handleDrop(items: items)
+          handleDrop(items: items, atIndex: indexInGroup + 1)
         } isTargeted: { isTargeted in
           isDropTargeted = isTargeted
         }
     }
   }
   
-  private func handleDrop(items: [OperationDragItem]) -> Bool {
+  private func handleDrop(items: [OperationDragItem], atIndex index: Int) -> Bool {
     guard let draggedItem = items.first else { return false }
     
-    // Calculate the target index: position after this path item
-    let targetIndex = indexInGroup + 1
-    
-    // Move the path to this group at the target index
-    return document.movePathToGroup(draggedItem.path, groupPath: groupPath, index: targetIndex)
+    // Move the path to this group at the specified index
+    return document.movePathToGroup(draggedItem.path, groupPath: groupPath, index: index)
   }
 }
 
 private extension View {
   func operationItemDraggable(_ path: String, operation: HTTPMethod) -> some View {
     self.draggable(OperationDragItem(path: path, operation: operation)) {
-      self
+      ZStack(alignment: .leading) {
+        self
+        RoundedRectangle(cornerRadius: 5).foregroundStyle(Color.green)
+      }
     }
   }
 }

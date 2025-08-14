@@ -17,17 +17,23 @@ public extension OpenAPI.Document {
   /// - Returns: True if the move was successful, false otherwise
   @discardableResult
   mutating func movePathToGroup(_ path: String, groupPath: [String], index: Int = 0) -> Bool {
+    let result = _movePathToGroup(path, groupPath: groupPath, index: index)
+    sortDocumentPaths()
+    return result
+  }
+
+  private mutating func _movePathToGroup(_ path: String, groupPath: [String], index: Int) -> Bool {
     // Ensure the path exists
     guard let paths = paths,
           let pathItemRef = paths[path] else {
       return false
     }
-    
+
     // Get the path item
     guard let pathItem = pathItemRef.resolve(in: self) else {
       return false
     }
-    
+
     // Check if it's already a reference
     if case .reference(let existingRef) = pathItemRef {
       // Move the existing component file to the new location
@@ -38,11 +44,28 @@ public extension OpenAPI.Document {
       return true
     }
   }
-  
+
   /// Moves an existing component file to a new group location
   private mutating func moveComponentFile(from ref: String, path: String, to groupPath: [String], index: Int) -> Bool {
     // Normalize the reference
     let normalizedRef = ref.hasPrefix("./") ? String(ref.dropFirst(2)) : ref
+    
+    // Extract current group path from the normalized reference
+    let pathComponents = normalizedRef.split(separator: "/").map { String($0) }
+    guard pathComponents.count >= 2 else { return false } // Should have at least "paths" and filename
+    
+    let currentGroupPath = Array(pathComponents.dropFirst().dropLast()) // Remove "paths" prefix and filename
+    
+    // Create new file path
+    let cleanPath = path.hasPrefix("/") ? String(path.dropFirst()) : path
+    let fileName = "\(cleanPath.replacingOccurrences(of: "/", with: "_")).yaml"
+    let newFilePath = (["paths"] + groupPath + [fileName]).joined(separator: "/")
+    
+    // If moving within the same group, just reorder
+    if currentGroupPath == groupPath {
+      moveItemToIndexInGroup(filePath: normalizedRef, toIndex: index, groupPath: groupPath)
+      return true
+    }
     
     // Get the path item from the old location
     guard let pathItem = componentFiles?.pathItems?[normalizedRef]?.value else {
@@ -51,11 +74,6 @@ public extension OpenAPI.Document {
     
     // Remove from old location
     componentFiles?.pathItems?[normalizedRef] = nil
-    
-    // Create new file path
-    let cleanPath = path.hasPrefix("/") ? String(path.dropFirst()) : path
-    let fileName = "\(cleanPath.replacingOccurrences(of: "/", with: "_")).yaml"
-    let newFilePath = (["paths"] + groupPath + [fileName]).joined(separator: "/")
     
     // Ensure the component files structure exists
     if componentFiles == nil {

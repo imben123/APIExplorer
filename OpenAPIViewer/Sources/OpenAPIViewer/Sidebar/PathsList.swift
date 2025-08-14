@@ -40,7 +40,17 @@ struct PathsList: View {
         
         Divider()
       }
-      
+
+      // Invisible root drop destination
+      Color.clear
+        .frame(height: 10)
+        .dropDestination(for: OperationDragItem.self) { items, location in
+          handleDropPathAtTop(items: items)
+        } isTargeted: { isTargeted in
+          isRootDropTargeted = isTargeted
+        }
+        .padding(.bottom, -10)
+
       List(selection: Binding(
         get: { selectedPath.map { "\($0)|\(selectedOperation?.rawValue ?? "")" } },
         set: { value in
@@ -64,7 +74,8 @@ struct PathsList: View {
               onDeleteOperation: deleteOperation,
               document: $document,
               groupPath: [],
-              indexInGroup: index
+              indexInGroup: index,
+              includeRootDropIndicator: index == 0 && isRootDropTargeted
             )
           }
 
@@ -108,11 +119,11 @@ struct PathsList: View {
     selectedOperation = .get
   }
   
-  private func handleRootDrop(items: [OperationDragItem]) -> Bool {
+  private func handleDropPathAtTop(items: [OperationDragItem]) -> Bool {
     guard let draggedItem = items.first else { return false }
 
     // Move the path to root (empty group path)
-    document.movePathToGroup(draggedItem.path, groupPath: [])
+    document.movePathToGroup(draggedItem.path, groupPath: [], index: 0)
 
     return true
   }
