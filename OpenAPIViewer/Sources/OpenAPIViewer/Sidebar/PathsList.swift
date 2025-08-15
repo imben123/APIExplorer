@@ -94,42 +94,20 @@ struct PathsList: View {
   private func pathListItemView(for item: PathListItem, at index: Int) -> some View {
     switch item {
     case .group(let name, let level, let groupPath):
-      HStack(spacing: 0) {
-        Button(action: {
+      GroupHeadingView(
+        name: name,
+        level: level,
+        groupPath: groupPath,
+        isCollapsed: viewModel.isGroupCollapsed(groupPath, name: name),
+        isEditMode: isEditMode,
+        onToggle: {
           viewModel.toggleGroup(groupPath, name: name)
           viewModel.update(from: document)
-        }) {
-          HStack(spacing: 6) {
-            Image(systemName: viewModel.isGroupCollapsed(groupPath, name: name) ? "chevron.right" : "chevron.down")
-              .font(.system(size: 10, weight: .medium))
-              .foregroundColor(.secondary)
-              .frame(width: 12)
-            Text(name)
-              .font(.system(size: 13, weight: .medium))
-              .foregroundColor(.primary)
-            Spacer()
-          }
-          .padding(.vertical, 4)
-          .padding(.leading, CGFloat(level * 16))
-          .contentShape(Rectangle())
+        },
+        onAddPath: {
+          addPathToGroup(groupPath + [name])
         }
-        .buttonStyle(PlainButtonStyle())
-        
-        if isEditMode {
-          Button(action: { 
-            addPathToGroup(groupPath + [name]) 
-          }) {
-            Image(systemName: "plus")
-              .font(.system(size: 11))
-              .foregroundColor(.secondary)
-              .frame(width: 20, height: 20)
-              .background(Color.gray.opacity(0.1))
-              .clipShape(RoundedRectangle(cornerRadius: 4))
-          }
-          .buttonStyle(PlainButtonStyle())
-          .padding(.trailing, 8)
-        }
-      }
+      )
       
     case .operation(let path, let method, let level, _):
       if let referenceable = document.paths?[path],
