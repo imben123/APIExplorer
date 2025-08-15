@@ -25,6 +25,7 @@
       "Bash(git worktree:*)",
       "Bash(cat:*)"
     ],
-    "deny": []
+    "deny": [],
+    "defaultMode": "acceptEdits"
   }
 }

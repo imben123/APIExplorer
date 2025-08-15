@@ -240,10 +240,10 @@ private extension OpenAPI.Document {
     for (groupName, subgroup) in group.groups {
       let newBasePath = basePath + [groupName]
       
-      // Create empty directory if the group has no items but exists
-      if subgroup.items.isEmpty && !subgroup.groups.isEmpty {
+      // Create empty directory if the group has no items
+      if subgroup.items.isEmpty {
         // Create the directory structure for empty groups
-        let dirPath = newBasePath.joined(separator: "/")
+        let dirPath = "paths/" + newBasePath.joined(separator: "/")
         createEmptyDirectoryStructure(dirPath: dirPath, to: directoryWrapper)
       }
       

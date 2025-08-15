@@ -79,3 +79,17 @@ extension OpenAPI.PathGroup {
     )
   }
 }
+
+extension String {
+  func convertReferenceToPathItemGroups() -> [String] {
+    return self
+      .removingPrefix("#/")
+      .removingPrefix("./")
+      .removingPrefix("components/")
+      .removingPrefix("paths/")
+      .removingPrefix("pathItems/")
+      .split(separator: "/")
+      .dropLast()
+      .map(String.init)
+  }
+}

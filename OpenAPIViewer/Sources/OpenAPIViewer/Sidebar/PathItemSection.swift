@@ -161,7 +161,8 @@ struct PathItemSection: View {
     guard let draggedItem = items.first else { return false }
     
     // Move the path to this group at the specified index
-    return document.movePathToGroup(draggedItem.path, groupPath: groupPath, index: index)
+    document.movePathToGroup(draggedItem.path, groupPath: groupPath, index: index)
+    return true
   }
 }
 

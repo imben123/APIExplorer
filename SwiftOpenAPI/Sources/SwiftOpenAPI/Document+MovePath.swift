@@ -14,89 +14,81 @@ public extension OpenAPI.Document {
   ///   - path: The path string to move (e.g., "/users")
   ///   - groupPath: The target group path components (e.g., ["v1", "resources"] for paths/v1/resources/)
   ///   - index: The index within the target group to place the path (defaults to end if not specified)
-  /// - Returns: True if the move was successful, false otherwise
-  @discardableResult
-  mutating func movePathToGroup(_ path: String, groupPath: [String], index: Int = 0) -> Bool {
-    let result = _movePathToGroup(path, groupPath: groupPath, index: index)
+  mutating func movePathToGroup(_ path: String, groupPath: [String], index: Int = 0) {
+    _movePathToGroup(path, groupPath: groupPath, index: index)
     sortDocumentPaths()
-    return result
   }
 
-  private mutating func _movePathToGroup(_ path: String, groupPath: [String], index: Int) -> Bool {
+  private mutating func _movePathToGroup(_ path: String, groupPath: [String], index: Int) {
     // Ensure the path exists
     guard let paths = paths,
           let pathItemRef = paths[path] else {
-      return false
+      return
     }
 
-    // Get the path item
-    guard let pathItem = pathItemRef.resolve(in: self) else {
-      return false
-    }
-
-    // Check if it's already a reference
-    if case .reference(let existingRef) = pathItemRef {
-      // Move the existing component file to the new location
-      return moveComponentFile(from: existingRef, path: path, to: groupPath, index: index)
-    } else {
-      // It's an inline value, we need to create a new component file
+    switch pathItemRef {
+    case .reference(let existingRef):
+      moveComponent(from: existingRef, path: path, to: groupPath, index: index)
+    case .value(let pathItem):
       createComponentFileInGroup(path: path, pathItem: pathItem, groupPath: groupPath, index: index)
-      return true
     }
   }
 
   /// Moves an existing component file to a new group location
-  private mutating func moveComponentFile(from ref: String, path: String, to groupPath: [String], index: Int) -> Bool {
-    // Normalize the reference
-    let normalizedRef = ref.hasPrefix("./") ? String(ref.dropFirst(2)) : ref
-    
-    // Extract current group path from the normalized reference
-    let pathComponents = normalizedRef.split(separator: "/").map { String($0) }
-    guard pathComponents.count >= 2 else { return false } // Should have at least "paths" and filename
-    
-    let currentGroupPath = Array(pathComponents.dropFirst().dropLast()) // Remove "paths" prefix and filename
-    
-    // Create new file path
-    let cleanPath = path.hasPrefix("/") ? String(path.dropFirst()) : path
-    let fileName = "\(cleanPath.replacingOccurrences(of: "/", with: "_")).yaml"
-    let newFilePath = (["paths"] + groupPath + [fileName]).joined(separator: "/")
-    
-    // If moving within the same group, just reorder
-    if currentGroupPath == groupPath {
-      moveItemToIndexInGroup(filePath: normalizedRef, toIndex: index, groupPath: groupPath)
-      return true
+  private mutating func moveComponent(from ref: String,
+                                      path: String,
+                                      to groupPath: [String],
+                                      index: Int) {
+    let existingGroupPath = ref.convertReferenceToPathItemGroups()
+    var adjustedIndex = index
+    if existingGroupPath == groupPath {
+      // In same group
+      let filePath = paths![path]!.ref!.removingPrefix("./")
+      let currentIndex = componentFiles?.pathItems?[group: groupPath]?.items.index(forKey: filePath) ?? Int.max
+      if currentIndex < index {
+        adjustedIndex -= 1
+      }
+    } else {
+      // Move to correct group
+      guard let pathItem = removePathItem(from: ref) else {
+        return
+      }
+      addPath(path, toGroup: groupPath, pathItem: pathItem)
     }
-    
-    // Get the path item from the old location
-    guard let pathItem = componentFiles?.pathItems?[normalizedRef]?.value else {
-      return false
+    guard let filePath = paths?[path]?.ref else {
+      return
     }
-    
-    // Remove from old location
-    componentFiles?.pathItems?[normalizedRef] = nil
-    
-    // Ensure the component files structure exists
-    if componentFiles == nil {
-      componentFiles = OpenAPI.Components()
+    if groupPath.isEmpty {
+      var rootGroup = componentFiles!.pathItems!
+      rootGroup.moveItem(filePath: filePath, toIndex: adjustedIndex)
+      componentFiles!.pathItems = rootGroup
+    } else {
+      componentFiles!
+        .pathItems![group: groupPath]!
+        .moveItem(filePath: filePath, toIndex: adjustedIndex)
     }
-    if componentFiles?.pathItems == nil {
-      componentFiles?.pathItems = OpenAPI.PathGroup()
-    }
-    
-    // Add to new location
-    componentFiles?.pathItems?[newFilePath] = .value(pathItem)
-    
-    // If a specific index was provided, move the item to that position within its group
-    moveItemToIndexInGroup(filePath: newFilePath, toIndex: index, groupPath: groupPath)
-
-    // Update the reference in paths
-    var updatedPaths = paths ?? [:]
-    updatedPaths[path] = .reference("./\(newFilePath)")
-    self.paths = updatedPaths
-    
-    return true
   }
-  
+
+  mutating func removePathItem(from ref: String) -> OpenAPI.PathItem? {
+    if ref.hasPrefix("#/components/") {
+      var pathComponents = ref.convertReferenceToPathItemGroups()
+      let key = pathComponents.removeLast()
+      guard let ref = components?.pathItems?.removeItem(in: pathComponents, key: key) else {
+        return nil
+      }
+      switch ref {
+      case .reference(let newReference):
+        return removePathItem(from: newReference)
+      case .value(let pathItem):
+        return pathItem
+      }
+    } else {
+      let filePath = ref.removingPrefix("./")
+      let pathComponents = ref.convertReferenceToPathItemGroups()
+      return componentFiles?.pathItems?.removeItem(in: pathComponents, key: filePath)?.value
+    }
+  }
+
   /// Creates a new component file in the specified group for an inline path item
   private mutating func createComponentFileInGroup(path: String,
                                                    pathItem: OpenAPI.PathItem,

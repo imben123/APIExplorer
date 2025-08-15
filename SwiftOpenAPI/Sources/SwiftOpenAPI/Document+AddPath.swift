@@ -26,7 +26,7 @@ public extension OpenAPI.Document {
     let cleanPath = path.hasPrefix("/") ? String(path.dropFirst()) : path
     
     // Build the file path components
-    let fileName = "\(cleanPath).yaml"
+    let fileName = "\(cleanPath.replacingOccurrences(of: "/", with: "_")).yaml"
     let fullPathComponents = ["paths"] + pathComponents + [fileName]
     
     // Add the path item to the correct nested group

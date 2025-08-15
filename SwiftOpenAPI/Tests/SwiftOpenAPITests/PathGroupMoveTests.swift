@@ -227,4 +227,144 @@ struct PathGroupMoveTests {
     #expect(itemKeys == ["item3.yaml", "item2.yaml", "item1.yaml"])
     #expect(groupKeys == ["groupB", "groupA"])
   }
+  
+  // MARK: - Forward Move Indexing Tests (Bug Fix Tests)
+  
+  @Test("Move item forward - first to last position")
+  func moveItemForwardFirstToLast() throws {
+    var pathGroup = OpenAPI.PathGroup()
+    
+    // Set up items: [A, B, C, D]
+    pathGroup.items["A.yaml"] = .value(OpenAPI.PathItem())
+    pathGroup.items["B.yaml"] = .value(OpenAPI.PathItem())
+    pathGroup.items["C.yaml"] = .value(OpenAPI.PathItem())
+    pathGroup.items["D.yaml"] = .value(OpenAPI.PathItem())
+    
+    // Move A (index 0) to last position (index 3)
+    pathGroup.moveItem(filePath: "A.yaml", toIndex: 3)
+    
+    let keys = Array(pathGroup.items.keys)
+    #expect(keys == ["B.yaml", "C.yaml", "D.yaml", "A.yaml"])
+  }
+  
+  @Test("Move item forward - middle to end")
+  func moveItemForwardMiddleToEnd() throws {
+    var pathGroup = OpenAPI.PathGroup()
+    
+    // Set up items: [A, B, C, D, E]
+    pathGroup.items["A.yaml"] = .value(OpenAPI.PathItem())
+    pathGroup.items["B.yaml"] = .value(OpenAPI.PathItem())
+    pathGroup.items["C.yaml"] = .value(OpenAPI.PathItem())
+    pathGroup.items["D.yaml"] = .value(OpenAPI.PathItem())
+    pathGroup.items["E.yaml"] = .value(OpenAPI.PathItem())
+    
+    // Move B (index 1) to position 4 (last)
+    pathGroup.moveItem(filePath: "B.yaml", toIndex: 4)
+    
+    let keys = Array(pathGroup.items.keys)
+    #expect(keys == ["A.yaml", "C.yaml", "D.yaml", "E.yaml", "B.yaml"])
+  }
+  
+  @Test("Move item forward - by one position")
+  func moveItemForwardByOne() throws {
+    var pathGroup = OpenAPI.PathGroup()
+    
+    // Set up items: [A, B, C, D]
+    pathGroup.items["A.yaml"] = .value(OpenAPI.PathItem())
+    pathGroup.items["B.yaml"] = .value(OpenAPI.PathItem())
+    pathGroup.items["C.yaml"] = .value(OpenAPI.PathItem())
+    pathGroup.items["D.yaml"] = .value(OpenAPI.PathItem())
+    
+    // Move A (index 0) to position 1
+    pathGroup.moveItem(filePath: "A.yaml", toIndex: 1)
+    
+    let keys = Array(pathGroup.items.keys)
+    #expect(keys == ["B.yaml", "A.yaml", "C.yaml", "D.yaml"])
+  }
+  
+  @Test("Move item backward - last to first position")
+  func moveItemBackwardLastToFirst() throws {
+    var pathGroup = OpenAPI.PathGroup()
+    
+    // Set up items: [A, B, C, D]
+    pathGroup.items["A.yaml"] = .value(OpenAPI.PathItem())
+    pathGroup.items["B.yaml"] = .value(OpenAPI.PathItem())
+    pathGroup.items["C.yaml"] = .value(OpenAPI.PathItem())
+    pathGroup.items["D.yaml"] = .value(OpenAPI.PathItem())
+    
+    // Move D (last) to first position (index 0)
+    pathGroup.moveItem(filePath: "D.yaml", toIndex: 0)
+    
+    let keys = Array(pathGroup.items.keys)
+    #expect(keys == ["D.yaml", "A.yaml", "B.yaml", "C.yaml"])
+  }
+  
+  @Test("Move item backward - by one position")
+  func moveItemBackwardByOne() throws {
+    var pathGroup = OpenAPI.PathGroup()
+    
+    // Set up items: [A, B, C, D]
+    pathGroup.items["A.yaml"] = .value(OpenAPI.PathItem())
+    pathGroup.items["B.yaml"] = .value(OpenAPI.PathItem())
+    pathGroup.items["C.yaml"] = .value(OpenAPI.PathItem())
+    pathGroup.items["D.yaml"] = .value(OpenAPI.PathItem())
+    
+    // Move C (index 2) to position 1
+    pathGroup.moveItem(filePath: "C.yaml", toIndex: 1)
+    
+    let keys = Array(pathGroup.items.keys)
+    #expect(keys == ["A.yaml", "C.yaml", "B.yaml", "D.yaml"])
+  }
+  
+  @Test("Move group forward - first to last position")
+  func moveGroupForwardFirstToLast() throws {
+    var pathGroup = OpenAPI.PathGroup()
+    
+    // Set up groups: [groupA, groupB, groupC, groupD]
+    pathGroup.groups["groupA"] = OpenAPI.PathGroup()
+    pathGroup.groups["groupB"] = OpenAPI.PathGroup()
+    pathGroup.groups["groupC"] = OpenAPI.PathGroup()
+    pathGroup.groups["groupD"] = OpenAPI.PathGroup()
+    
+    // Move groupA (index 0) to last position (index 3)
+    pathGroup.moveGroup(groupName: "groupA", toIndex: 3)
+    
+    let keys = Array(pathGroup.groups.keys)
+    #expect(keys == ["groupB", "groupC", "groupD", "groupA"])
+  }
+  
+  @Test("Move group forward - middle to end")
+  func moveGroupForwardMiddleToEnd() throws {
+    var pathGroup = OpenAPI.PathGroup()
+    
+    // Set up groups: [groupA, groupB, groupC, groupD, groupE]
+    pathGroup.groups["groupA"] = OpenAPI.PathGroup()
+    pathGroup.groups["groupB"] = OpenAPI.PathGroup()
+    pathGroup.groups["groupC"] = OpenAPI.PathGroup()
+    pathGroup.groups["groupD"] = OpenAPI.PathGroup()
+    pathGroup.groups["groupE"] = OpenAPI.PathGroup()
+    
+    // Move groupB (index 1) to position 4 (last)
+    pathGroup.moveGroup(groupName: "groupB", toIndex: 4)
+    
+    let keys = Array(pathGroup.groups.keys)
+    #expect(keys == ["groupA", "groupC", "groupD", "groupE", "groupB"])
+  }
+  
+  @Test("Move group backward - last to first position")
+  func moveGroupBackwardLastToFirst() throws {
+    var pathGroup = OpenAPI.PathGroup()
+    
+    // Set up groups: [groupA, groupB, groupC, groupD]
+    pathGroup.groups["groupA"] = OpenAPI.PathGroup()
+    pathGroup.groups["groupB"] = OpenAPI.PathGroup()
+    pathGroup.groups["groupC"] = OpenAPI.PathGroup()
+    pathGroup.groups["groupD"] = OpenAPI.PathGroup()
+    
+    // Move groupD (last) to first position (index 0)
+    pathGroup.moveGroup(groupName: "groupD", toIndex: 0)
+    
+    let keys = Array(pathGroup.groups.keys)
+    #expect(keys == ["groupD", "groupA", "groupB", "groupC"])
+  }
 }

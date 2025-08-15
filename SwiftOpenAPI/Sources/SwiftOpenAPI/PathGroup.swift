@@ -58,7 +58,7 @@ public extension OpenAPI {
       get {
         let normalizedRef = ref.dropPrefix("./").dropPrefix("components/").dropPrefix("pathItems/").dropPrefix("paths/")
         let subdirectories = normalizedRef.split(separator: "/").dropLast().map { String($0) }
-        return getItem(in: subdirectories, filePath: String(ref.dropPrefix("./")))
+        return getItem(in: subdirectories, key: String(ref.dropPrefix("./")))
       }
       set {
         let normalizedRef = ref.dropPrefix("./").dropPrefix("components/").dropPrefix("pathItems/").dropPrefix("paths/")
@@ -67,28 +67,53 @@ public extension OpenAPI {
       }
     }
 
+    public subscript(group pathComponents: [String]) -> PathGroup? {
+      get {
+        return getGroup(pathComponents)
+      }
+      set {
+        setGroup(newValue, subdirectories: pathComponents)
+      }
+    }
+
     public mutating func addGroups(forPath path: String) {
       let normalizedPath = path.dropPrefix("./").dropPrefix("components/").dropPrefix("pathItems/").dropPrefix("paths/")
       let subdirectories = normalizedPath.split(separator: "/").map { String($0) }
-      addGroups(subdirectories)
+      setGroup(PathGroup(), subdirectories: subdirectories)
     }
 
-    private mutating func addGroups(_ subdirectories: [String]) {
+    private mutating func setGroup(_ group: PathGroup?, subdirectories: [String]) {
       var subdirectories = subdirectories
       let item = subdirectories.removeFirst()
-      groups[item] = PathGroup()
-      if !subdirectories.isEmpty {
-        groups[item]!.addGroups(subdirectories)
+      if subdirectories.isEmpty {
+        if let group {
+          groups[item] = group
+        } else {
+          groups.removeValue(forKey: item)
+        }
+      } else {
+        var intermediateGroup = groups[item] ?? PathGroup()
+        intermediateGroup.setGroup(group, subdirectories: subdirectories)
+        groups[item] = intermediateGroup
       }
     }
 
-    func getItem(in subdirectories: [String], filePath: String) -> Referenceable<PathItem>? {
-      guard subdirectories.isEmpty else {
-        var subdirectories = subdirectories
-        let groupName = subdirectories.removeFirst()
-        return groups[groupName]!.getItem(in: subdirectories, filePath: filePath)
+    func getItem(in pathComponents: [String], key: String) -> Referenceable<PathItem>? {
+      guard pathComponents.isEmpty else {
+        var pathComponents = pathComponents
+        let groupName = pathComponents.removeFirst()
+        return groups[groupName]?.getItem(in: pathComponents, key: key)
       }
-      return items[filePath]
+      return items[key]
+    }
+
+    mutating func removeItem(in pathComponents: [String], key: String) -> Referenceable<PathItem>? {
+      guard pathComponents.isEmpty else {
+        var pathComponents = pathComponents
+        let groupName = pathComponents.removeFirst()
+        return groups[groupName]?.removeItem(in: pathComponents, key: key)
+      }
+      return items.removeValue(forKey: key)
     }
 
     func getGroup(_ pathComponents: [String]) -> PathGroup? {
@@ -193,46 +218,21 @@ public extension OpenAPI {
     ///   - filePath: The file path of the item to move
     ///   - toIndex: The target index (clamped to valid range)
     mutating func moveItem(filePath: String, toIndex: Int) {
-      guard let item = items[filePath] else { return }
-      
-      // Find the current index of the item
-      let itemsArray = Array(items)
+      // Normalize file path
+      let filePath = filePath.removingPrefix("./")
+
+      // Convert to array for easy manipulation
+      var itemsArray = Array(items)
+
+      // Get current index
       guard let currentIndex = itemsArray.firstIndex(where: { $0.key == filePath }) else { return }
-      
-      // Remove the item from its current position
-      items.removeValue(forKey: filePath)
-      
-      // Calculate the actual insertion index after removal
-      let itemsArrayAfterRemoval = Array(items)
-      let actualInsertionIndex: Int
-      
-      if toIndex > currentIndex {
-        // Moving forward: the target index shifts down by 1 due to removal
-        actualInsertionIndex = max(0, min(toIndex - 1, itemsArrayAfterRemoval.count))
-      } else {
-        // Moving backward: the target index remains the same
-        actualInsertionIndex = max(0, min(toIndex, itemsArrayAfterRemoval.count))
-      }
-      
-      // Rebuild the ordered dictionary with the item at the new position
-      var newItems = OrderedDictionary<String, Referenceable<PathItem>>()
-      var itemInserted = false
-      
-      for (index, (key, value)) in itemsArrayAfterRemoval.enumerated() {
-        if index == actualInsertionIndex && !itemInserted {
-          // Insert the moved item at this position
-          newItems[filePath] = item
-          itemInserted = true
-        }
-        newItems[key] = value
-      }
-      
-      // If the target index is at or beyond the end, append the item
-      if !itemInserted {
-        newItems[filePath] = item
-      }
-      
-      items = newItems
+
+      // Move the item
+      let item = itemsArray.remove(at: currentIndex)
+      itemsArray.insert(item, at: max(0, min(toIndex, itemsArray.count)))
+
+      // Convert back to dictionary
+      items = OrderedDictionary(uniqueKeysWithValues: itemsArray)
     }
     
     /// Moves a subgroup to a specific index within the groups collection
@@ -240,46 +240,20 @@ public extension OpenAPI {
     ///   - groupName: The name of the group to move
     ///   - toIndex: The target index (clamped to valid range)
     mutating func moveGroup(groupName: String, toIndex: Int) {
-      guard let group = groups[groupName] else { return }
-      
-      // Find the current index of the group
-      let groupsArray = Array(groups)
-      guard let currentIndex = groupsArray.firstIndex(where: { $0.key == groupName }) else { return }
-      
-      // Remove the group from its current position
-      groups.removeValue(forKey: groupName)
-      
-      // Calculate the actual insertion index after removal
-      let groupsArrayAfterRemoval = Array(groups)
-      let actualInsertionIndex: Int
-      
-      if toIndex > currentIndex {
-        // Moving forward: the target index shifts down by 1 due to removal
-        actualInsertionIndex = max(0, min(toIndex - 1, groupsArrayAfterRemoval.count))
-      } else {
-        // Moving backward: the target index remains the same
-        actualInsertionIndex = max(0, min(toIndex, groupsArrayAfterRemoval.count))
+      // Convert to array for easy manipulation
+      var groupsArray = Array(groups)
+
+      // Get current index
+      guard let currentIndex = groupsArray.firstIndex(where: { $0.key == groupName }) else {
+        return
       }
-      
-      // Rebuild the ordered dictionary with the group at the new position
-      var newGroups = OrderedDictionary<String, PathGroup>()
-      var groupInserted = false
-      
-      for (index, (key, value)) in groupsArrayAfterRemoval.enumerated() {
-        if index == actualInsertionIndex && !groupInserted {
-          // Insert the moved group at this position
-          newGroups[groupName] = group
-          groupInserted = true
-        }
-        newGroups[key] = value
-      }
-      
-      // If the target index is at or beyond the end, append the group
-      if !groupInserted {
-        newGroups[groupName] = group
-      }
-      
-      groups = newGroups
+
+      // Move the group
+      let group = groupsArray.remove(at: currentIndex)
+      groupsArray.insert(group, at: max(0, min(toIndex, groupsArray.count)))
+
+      // Convert back to dictionary
+      groups = OrderedDictionary(uniqueKeysWithValues: groupsArray)
     }
   }
 }
