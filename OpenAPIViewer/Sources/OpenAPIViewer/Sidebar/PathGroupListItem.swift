@@ -19,7 +19,6 @@ struct PathGroupListItem: View {
   let onDeleteOperation: (String, HTTPMethod) -> Void
 
   @State private var isExpanded: Bool = true
-  @State private var isDropTargeted: Bool = false
   @Environment(\.editMode) private var isEditMode
 
   var body: some View {
@@ -55,12 +54,6 @@ struct PathGroupListItem: View {
         .padding(.trailing, 8)
       }
     }
-    .background(isDropTargeted ? Color.blue.opacity(0.1) : Color.clear)
-    .dropDestination(for: OperationDragItem.self) { items, location in
-      handleDrop(items: items)
-    } isTargeted: { isTargeted in
-      isDropTargeted = isTargeted
-    }
 
     // Directory contents (if expanded)
     if isExpanded {
@@ -72,10 +65,8 @@ struct PathGroupListItem: View {
           PathItemSection(path: path,
                           pathItem: document[filePath: filePath],
                           indentLevel: indentLevel + 1,
-                          onDeleteOperation: onDeleteOperation,
-                          document: $document,
-                          groupPath: currentGroupPath,
-                          indexInGroup: index)
+                          onDeleteOperation: onDeleteOperation)
+          .overlay(content: { Rectangle().stroke().foregroundStyle(Color.yellow) })
         }
       }
 
@@ -101,17 +92,5 @@ struct PathGroupListItem: View {
     // Generate a unique path name and add it to the group
     let uniquePath = document.generateUniquePathName(in: pathComponents)
     document.addPath(uniquePath, toGroup: pathComponents)
-  }
-  
-  private func handleDrop(items: [OperationDragItem]) -> Bool {
-    guard let draggedItem = items.first else { return false }
-    
-    // Build the path components for the target group
-    let targetGroupPath = pathPrefix.isEmpty ? [name] : pathPrefix.split(separator: "/").map(String.init) + [name]
-    
-    // Move the path to this group
-    document.movePathToGroup(draggedItem.path, groupPath: targetGroupPath)
-    
-    return true
   }
 }
